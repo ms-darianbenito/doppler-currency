@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using CrossCutting;
 using CrossCutting.SlackHooksService;
 using Microsoft.AspNetCore.Builder;
@@ -35,7 +36,14 @@ namespace UsdQuotation
             Configuration.GetSection("HttpClient:BnaClient").Bind(httpClientPolicies);
             services.AddSingleton(httpClientPolicies);
 
+            var handlerHttpClient = new HttpClientHandler
+            {
+                ClientCertificateOptions = ClientCertificateOption.Automatic,
+                SslProtocols = SslProtocols.Tls12
+            };
+
             services.AddHttpClient(httpClientPolicies.ClientName, c => { })
+                .ConfigurePrimaryHttpMessageHandler(() => handlerHttpClient)
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5))
                 .AddPolicyHandler(GetRetryPolicy(httpClientPolicies.Policies.RetryAttemps));
 
