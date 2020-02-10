@@ -52,7 +52,7 @@ namespace UsdQuotation.Services
 
             if (document.GetElementsByClassName("sinResultados").Any())
             {
-                await _slackHooksService.SendNotification(_httpClient, "No hay cotizaciones pendientes para esa fecha.");
+                await _slackHooksService.SendNotification(_httpClient, _bnaSettings.NoQuotation);
                 return null;
             }
 
@@ -81,23 +81,19 @@ namespace UsdQuotation.Services
             var buy = usdToday.GetElementsByTagName("td").ElementAtOrDefault(1);
             var sale = usdToday.GetElementsByTagName("td").ElementAtOrDefault(2);
             var date = usdToday.GetElementsByTagName("td").ElementAtOrDefault(3);
-            if (buy == null || sale == null)
-            {
-                await _slackHooksService.SendNotification(_httpClient);
-                return null;
-            }
 
-            if (date != null)
+            if (buy != null && sale != null && date != null)
+            {
                 return new Usd
                 {
                     Date = date.InnerHtml,
                     SaleValue = sale.InnerHtml,
                     BuyValue = buy.InnerHtml
                 };
+            }
 
             await _slackHooksService.SendNotification(_httpClient);
             return null;
-
         }
     }
 }
