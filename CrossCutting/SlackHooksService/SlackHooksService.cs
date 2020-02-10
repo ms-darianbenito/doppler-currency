@@ -33,11 +33,11 @@ namespace CrossCutting.SlackHooksService
             };
         }
 
-        public async Task<HttpResponseMessage> SendNotification(HttpClient httpClient)
+        public async Task<HttpResponseMessage> SendNotification(HttpClient httpClient, string message = null)
         {
             var payloadData = new
             {
-                text = _slackHookSettings.Text
+                text = !string.IsNullOrEmpty(message) ? message : _slackHookSettings.Text
             };
 
             var builder = new UriBuilder(_slackHookSettings.Url);

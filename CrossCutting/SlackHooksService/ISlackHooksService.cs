@@ -5,6 +5,6 @@ namespace CrossCutting.SlackHooksService
 {
     public interface ISlackHooksService
     {
-        public Task<HttpResponseMessage> SendNotification(HttpClient httpClient);
+        public Task<HttpResponseMessage> SendNotification(HttpClient httpClient, string message = null);
     }
 }

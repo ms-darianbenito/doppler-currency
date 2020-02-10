@@ -148,7 +148,7 @@ namespace UsdQuotation.Test
             httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
             var service = new BnaService(httpClientFactoryMock.Object,
@@ -165,7 +165,7 @@ namespace UsdQuotation.Test
 
             await service.GetUsdToday();
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>()), Times.Once);
+            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()), Times.Once);
 
         }
 
@@ -199,7 +199,7 @@ namespace UsdQuotation.Test
             httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
             var service = new BnaService(httpClientFactoryMock.Object,
@@ -216,7 +216,7 @@ namespace UsdQuotation.Test
 
             await service.GetUsdToday();
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>()), Times.Once);
+            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()), Times.Once);
         }
     }
 }

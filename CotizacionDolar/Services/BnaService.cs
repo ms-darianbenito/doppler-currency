@@ -50,6 +50,12 @@ namespace UsdQuotation.Services
             var parser = new HtmlParser();
             var document = parser.ParseDocument(htmlPage);
 
+            if (document.GetElementsByClassName("sinResultados").Any())
+            {
+                await _slackHooksService.SendNotification(_httpClient, "No hay cotizaciones pendientes para esa fecha.");
+                return null;
+            }
+
             var titleValidation = document.GetElementsByTagName("tr").ElementAtOrDefault(1);
             if (titleValidation == null)
             {
