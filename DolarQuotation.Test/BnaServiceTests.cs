@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting.SlackHooksService;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using NUnit.Framework;
@@ -70,7 +71,8 @@ namespace UsdQuotation.Test
                     EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
                     ValidationHtml = "Dolar U.S.A"
                 },
-                Mock.Of<ISlackHooksService>());
+                Mock.Of<ISlackHooksService>(),
+                Mock.Of<ILogger<BnaService>>());
 
             var result = await service.GetUsdToday();
 
@@ -123,7 +125,8 @@ namespace UsdQuotation.Test
                     EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
                     ValidationHtml = "Dolar U.S.A"
                 },
-                Mock.Of<ISlackHooksService>());
+                Mock.Of<ISlackHooksService>(),
+                Mock.Of<ILogger<BnaService>>());
 
             var result = await service.GetUsdToday();
 
@@ -161,7 +164,8 @@ namespace UsdQuotation.Test
                     EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
                     ValidationHtml = "Dolar U.S.A"
                 },
-                slackHooksServiceMock.Object);
+                slackHooksServiceMock.Object,
+                Mock.Of<ILogger<BnaService>>());
 
             await service.GetUsdToday();
 
@@ -212,7 +216,8 @@ namespace UsdQuotation.Test
                     EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
                     ValidationHtml = "Dolar U.S.A"
                 },
-                slackHooksServiceMock.Object);
+                slackHooksServiceMock.Object,
+                Mock.Of<ILogger<BnaService>>());
 
             await service.GetUsdToday();
 

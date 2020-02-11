@@ -15,6 +15,7 @@ namespace UsdQuotation
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
+                })
+                .ConfigureLogging((hostingContext, builder) => {});
     }
 }
