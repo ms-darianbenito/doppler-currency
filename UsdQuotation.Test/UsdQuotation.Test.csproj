@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CotizacionDolar\UsdQuotation.csproj" />
+    <ProjectReference Include="..\UsdQuotation\UsdQuotation.csproj" />
   </ItemGroup>
 
 </Project>
