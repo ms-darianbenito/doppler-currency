@@ -14,11 +14,6 @@ namespace UsdQuotation.Test
 {
     public class BnaServiceTests
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public async Task GetUsdToday_ShouldBeReturnUsdQuotationOfBna_WhenHtmlHaveTwoQuotationUsdToReturnOk()
         {
@@ -65,7 +60,7 @@ namespace UsdQuotation.Test
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
-                }, 
+                },
                 new BnaSettings
                 {
                     EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
@@ -74,7 +69,7 @@ namespace UsdQuotation.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILogger<BnaService>>());
 
-            var result = await service.GetUsdToday();
+            var result = await service.GetUsdToday(null);
 
             Assert.AreEqual(result.Date, "5/2/2020");
         }
@@ -128,7 +123,7 @@ namespace UsdQuotation.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILogger<BnaService>>());
 
-            var result = await service.GetUsdToday();
+            var result = await service.GetUsdToday(null);
 
             Assert.AreEqual(result.Date, "4/2/2020");
         }
@@ -167,7 +162,7 @@ namespace UsdQuotation.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILogger<BnaService>>());
 
-            await service.GetUsdToday();
+            await service.GetUsdToday(null);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()), Times.Once);
 
@@ -219,7 +214,7 @@ namespace UsdQuotation.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILogger<BnaService>>());
 
-            await service.GetUsdToday();
+            await service.GetUsdToday(null);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()), Times.Once);
         }

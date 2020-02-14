@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UsdQuotation.Services;
@@ -19,10 +20,15 @@ namespace UsdQuotation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(DateTime? date = null)
         {
+            if (date > DateTime.Now)
+            {
+                return BadRequest("Date is not valid, please check again with format MM/dd/yyyy");
+            }
+
             _logger.LogInformation("Getting Usd today");
-            var result = await _bnaService.GetUsdToday();
+            var result = await _bnaService.GetUsdToday(date);
 
             if (result != null)
                 return Ok(result);

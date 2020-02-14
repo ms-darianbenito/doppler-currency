@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using CrossCutting.SlackHooksService;
 using Microsoft.Extensions.Logging;
@@ -29,10 +32,12 @@ namespace UsdQuotation.Services
             _logger = logger;
         }
 
-        public async Task<Usd> GetUsdToday()
+        public async Task<Usd> GetUsdToday(DateTime? date)
         {
             // Construct URL
-            var dateUrl = System.Web.HttpUtility.UrlEncode($"{DateTime.Now:dd/MM/yyyy}");
+            var dateUrl = date == null ? System.Web.HttpUtility.UrlEncode($"{DateTime.Now:dd/MM/yyyy}") :
+                System.Web.HttpUtility.UrlEncode($"{date:dd/MM/yyyy}");
+
             var uri = new Uri(_bnaSettings.EndPoint + "&fecha=" + dateUrl);
 
             // Create HTTP transport objects
@@ -48,10 +53,10 @@ namespace UsdQuotation.Services
             _logger.LogInformation("Getting Html content of the Bna.");
             var htmlPage = await httpResponse.Content.ReadAsStringAsync();
 
-            return await GetDataFromHtmlAsync(htmlPage);
+            return await GetDataFromHtmlAsync(htmlPage, date);
         }
 
-        private async Task<Usd> GetDataFromHtmlAsync(string htmlPage)
+        private async Task<Usd> GetDataFromHtmlAsync(string htmlPage, DateTime? dateTime)
         {
             var parser = new HtmlParser();
             var document = parser.ParseDocument(htmlPage);
@@ -79,18 +84,27 @@ namespace UsdQuotation.Services
                 return null;
             }
 
-            var usdToday = document.GetElementsByTagName("tr").LastOrDefault();
+            IElement usdQuotation;
+            if (dateTime == null)
+            {
+                usdQuotation = document.GetElementsByTagName("tr").LastOrDefault();
+            }
+            else
+            {
+                usdQuotation = GetQuotationByDate(document.GetElementsByTagName("tbody").FirstOrDefault().GetElementsByTagName("tr"), dateTime);
+            }
+            
 
-            if (usdToday == null)
+            if (usdQuotation == null)
             {
                 _logger.LogError($"Error getting HTML, please check HTML: {htmlPage}");
                 await _slackHooksService.SendNotification(_httpClient);
                 return null;
             }
 
-            var buy = usdToday.GetElementsByTagName("td").ElementAtOrDefault(1);
-            var sale = usdToday.GetElementsByTagName("td").ElementAtOrDefault(2);
-            var date = usdToday.GetElementsByTagName("td").ElementAtOrDefault(3);
+            var buy = usdQuotation.GetElementsByTagName("td").ElementAtOrDefault(1);
+            var sale = usdQuotation.GetElementsByTagName("td").ElementAtOrDefault(2);
+            var date = usdQuotation.GetElementsByTagName("td").ElementAtOrDefault(3);
 
             if (buy != null && sale != null && date != null)
             {
@@ -104,6 +118,17 @@ namespace UsdQuotation.Services
 
             _logger.LogError($"Error getting HTML, please check HTML: {htmlPage}");
             await _slackHooksService.SendNotification(_httpClient);
+            return null;
+        }
+
+        private IElement GetQuotationByDate(IEnumerable<IElement> htmlData, DateTime? dateTime)
+        {
+            foreach (var node in htmlData)
+            {
+                if (node.GetElementsByTagName("td").ElementAtOrDefault(3).InnerHtml.Equals($"{dateTime:d/M/yyyy}"))
+                    return node;
+            }
+
             return null;
         }
     }
