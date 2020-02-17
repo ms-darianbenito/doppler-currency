@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -84,15 +83,8 @@ namespace UsdQuotation.Services
                 return null;
             }
 
-            IElement usdQuotation;
-            if (dateTime == null)
-            {
-                usdQuotation = document.GetElementsByTagName("tr").LastOrDefault();
-            }
-            else
-            {
-                usdQuotation = GetQuotationByDate(document.GetElementsByTagName("tbody").FirstOrDefault().GetElementsByTagName("tr"), dateTime);
-            }
+            var usdQuotation = dateTime == null ? document.GetElementsByTagName("tr").LastOrDefault() : 
+                GetQuotationByDate(document.GetElementsByTagName("tbody").FirstOrDefault()?.GetElementsByTagName("tr"), dateTime);
             
 
             if (usdQuotation == null)
@@ -121,11 +113,13 @@ namespace UsdQuotation.Services
             return null;
         }
 
-        private IElement GetQuotationByDate(IEnumerable<IElement> htmlData, DateTime? dateTime)
+        private static IElement GetQuotationByDate(IEnumerable<IElement> htmlData, DateTime? dateTime)
         {
             foreach (var node in htmlData)
             {
-                if (node.GetElementsByTagName("td").ElementAtOrDefault(3).InnerHtml.Equals($"{dateTime:d/M/yyyy}"))
+                var date = node.GetElementsByTagName("td").ElementAtOrDefault(3);
+
+                if (date != null && date.InnerHtml.Equals($"{dateTime:d/M/yyyy}"))
                     return node;
             }
 

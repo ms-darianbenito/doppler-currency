@@ -1,41 +1,30 @@
-﻿using Microsoft.AspNetCore.TestHost;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using NUnit.Framework;
+using Xunit;
 
 namespace UsdQuotation.Test.Integration
 {
-    public class UsdQuotationControllerTest
+    public class UsdQuotationControllerTest : IClassFixture<TestServerFixture>
     {
         private readonly HttpClient _client;
 
-        public UsdQuotationControllerTest()
+        public UsdQuotationControllerTest(TestServerFixture testServerFixture)
         {
             // Arrange
-            var server = new TestServer(new WebHostBuilder()
-                .ConfigureAppConfiguration((hostContext, config) =>
-                {
-                    config.Sources.Clear();
-                    config.AddJsonFile("appsettings.json")
-                        .AddEnvironmentVariables();
-                })
-                .UseStartup<Startup>());
-            _client = server.CreateClient();
+            _client = testServerFixture.Client;
         }
 
-        [Test]
+        [Fact]
         public async Task GetUsdToday_ShouldBeSendSlackNotificationError_WhenHtmlTitleIsNotCorrect()
         {
             // Act
-            var response = await _client.GetAsync("UsdQuotation");
+            var response = await _client.GetAsync("UsdQuotation");                          
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.IsNotEmpty(responseString);
+            Assert.NotEmpty(responseString);
         }
     }
 }
