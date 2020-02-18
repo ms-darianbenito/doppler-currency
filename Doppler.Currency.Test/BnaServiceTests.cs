@@ -3,11 +3,12 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using UsdQuotation.Services;
 using UsdQuotation.Settings;
+using UsdQuotation.Test.Integration;
 using Xunit;
 
 namespace UsdQuotation.Test
@@ -56,7 +57,8 @@ namespace UsdQuotation.Test
             var client = new HttpClient(mockHttpMessageHandler.Object);
             httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
 
-            var service = new BnaService(httpClientFactoryMock.Object,
+            var service = CreateSutBnaService.CreateSut(
+                httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
@@ -71,7 +73,7 @@ namespace UsdQuotation.Test
 
             var result = await service.GetUsdToday(null);
 
-            Assert.Equal("2020-02-05 03:00:00Z", result.Date);
+            Assert.Equal("2020-02-05 03:00:00Z", result.Entity.Date);
         }
 
         [Fact]
@@ -110,7 +112,8 @@ namespace UsdQuotation.Test
             var client = new HttpClient(mockHttpMessageHandler.Object);
             httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
 
-            var service = new BnaService(httpClientFactoryMock.Object,
+            var service = CreateSutBnaService.CreateSut(
+                httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
@@ -125,7 +128,7 @@ namespace UsdQuotation.Test
 
             var result = await service.GetUsdToday(null);
 
-            Assert.Equal("2020-02-04 03:00:00Z", result.Date);
+            Assert.Equal("2020-02-04 03:00:00Z", result.Entity.Date);
         }
 
         [Fact]
@@ -149,7 +152,8 @@ namespace UsdQuotation.Test
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
-            var service = new BnaService(httpClientFactoryMock.Object,
+            var service = CreateSutBnaService.CreateSut(
+                httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
@@ -201,7 +205,8 @@ namespace UsdQuotation.Test
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
-            var service = new BnaService(httpClientFactoryMock.Object,
+            var service = CreateSutBnaService.CreateSut(
+                httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
@@ -252,7 +257,8 @@ namespace UsdQuotation.Test
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
-            var service = new BnaService(httpClientFactoryMock.Object,
+            var service = CreateSutBnaService.CreateSut(
+                httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"

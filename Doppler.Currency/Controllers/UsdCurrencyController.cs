@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Doppler.Currency.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using UsdQuotation.Services;
 
-namespace UsdQuotation.Controllers
+namespace Doppler.Currency.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UsdQuotationController : ControllerBase
+    public class UsdCurrencyController : ControllerBase
     {
-        private readonly ILogger<UsdQuotationController> _logger;
+        private readonly ILogger<UsdCurrencyController> _logger;
         private readonly IBnaService _bnaService;
 
-        public UsdQuotationController(ILogger<UsdQuotationController> logger, IBnaService bnaService)
-        {
-            _logger = logger;
-            _bnaService = bnaService;
-        }
+        public UsdCurrencyController(ILogger<UsdCurrencyController> logger, IBnaService bnaService) => 
+            (_logger, _bnaService) = (logger, bnaService);
 
         [HttpGet]
         public async Task<IActionResult> Get(DateTime? date = null)
@@ -30,10 +27,10 @@ namespace UsdQuotation.Controllers
             _logger.LogInformation("Getting Usd today");
             var result = await _bnaService.GetUsdToday(date);
 
-            if (result != null)
+            if (result.Success)
                 return Ok(result);
 
-            return NotFound("You can not found the USD quotation today");
+            return BadRequest(result.Errors);
         }
     }
 }

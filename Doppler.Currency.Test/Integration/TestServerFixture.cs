@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using CrossCutting.SlackHooksService;
+using Doppler.Currency;
+using Doppler.Currency.Services;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 
 namespace UsdQuotation.Test.Integration
 {
@@ -14,16 +18,21 @@ namespace UsdQuotation.Test.Integration
 
         public HttpClient Client { get; }
 
+        public Mock<IBnaService> BnaServiceMock;
+        public Mock<ISlackHooksService> SlackHookServiceMock;
+
         public TestServerFixture()
         {
+            BnaServiceMock = new Mock<IBnaService>();
+            SlackHookServiceMock = new Mock<ISlackHooksService>();
+
             var builder = WebHost.CreateDefaultBuilder()
-                .ConfigureAppConfiguration((hostContext, config) =>
+                .UseStartup<Startup>()
+                .ConfigureTestServices(services =>
                 {
-                    config.Sources.Clear();
-                    config.AddJsonFile("appsettings.json")
-                        .AddEnvironmentVariables();
-                })
-                .UseStartup<Startup>();
+                    services.AddSingleton(BnaServiceMock.Object);
+                    services.AddSingleton(SlackHookServiceMock.Object);
+                });
 
             Server = new TestServer(builder);
             Client = Server.CreateClient();

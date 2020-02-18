@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace UsdQuotation
+namespace Doppler.Currency
 {
     public class Program
     {

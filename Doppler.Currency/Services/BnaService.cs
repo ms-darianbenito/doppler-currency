@@ -6,12 +6,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
+using CrossCutting;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Dtos;
 using Microsoft.Extensions.Logging;
-using UsdQuotation.Dtos;
 using UsdQuotation.Settings;
 
-namespace UsdQuotation.Services
+namespace Doppler.Currency.Services
 {
     public class BnaService : IBnaService
     {
@@ -20,19 +21,16 @@ namespace UsdQuotation.Services
         private readonly ISlackHooksService _slackHooksService;
         private readonly ILogger<BnaService> _logger;
 
-        public BnaService(IHttpClientFactory httpClientFactory,
+        public BnaService(
+            IHttpClientFactory httpClientFactory,
             HttpClientPoliciesSettings bnaClientPoliciesSettings,
             BnaSettings bnaSettings,
             ISlackHooksService slackHooksService,
-            ILogger<BnaService> logger)
-        {
-            _httpClient = httpClientFactory.CreateClient(bnaClientPoliciesSettings.ClientName);
-            _bnaSettings = bnaSettings;
-            _slackHooksService = slackHooksService;
-            _logger = logger;
-        }
+            ILogger<BnaService> logger) =>
+            (_httpClient,_bnaSettings, _slackHooksService, _logger) =
+            (httpClientFactory.CreateClient(bnaClientPoliciesSettings.ClientName), bnaSettings, slackHooksService, logger);
 
-        public async Task<Usd> GetUsdToday(DateTime? date)
+        public async Task<EntityOperationResult<UsdCurrency>> GetUsdToday(DateTime? date)
         {
             // Construct URL
             var dateUrl = date == null ? System.Web.HttpUtility.UrlEncode($"{DateTime.Now:dd/MM/yyyy}") :
@@ -56,8 +54,9 @@ namespace UsdQuotation.Services
             return await GetDataFromHtmlAsync(htmlPage, date);
         }
 
-        private async Task<Usd> GetDataFromHtmlAsync(string htmlPage, DateTime? dateTime)
+        private async Task<EntityOperationResult<UsdCurrency>> GetDataFromHtmlAsync(string htmlPage, DateTime? dateTime)
         {
+            var result = new EntityOperationResult<UsdCurrency>();
             var parser = new HtmlParser();
             var document = parser.ParseDocument(htmlPage);
 
@@ -65,7 +64,8 @@ namespace UsdQuotation.Services
             {
                 _logger.LogError("Error getting HTML, currently does not exist quotation USD.");
                 await _slackHooksService.SendNotification(_httpClient, _bnaSettings.NoQuotation);
-                return null;
+                result.AddError("Html Error Bna","Error getting HTML, currently does not exist quotation USD.");
+                return result;
             }
 
             var titleValidation = document.GetElementsByTagName("tr").ElementAtOrDefault(1);
@@ -73,7 +73,8 @@ namespace UsdQuotation.Services
             {
                 _logger.LogError($"Error getting HTML, title is not valid, please check HTML: {htmlPage}");
                 await _slackHooksService.SendNotification(_httpClient);
-                return null;
+                result.AddError("Html Error Bna", "Error getting HTML, currently does not exist quotation USD.");
+                return result;
             }
 
             var titleText = titleValidation.GetElementsByTagName("td").ElementAtOrDefault(0);
@@ -81,7 +82,8 @@ namespace UsdQuotation.Services
             {
                 _logger.LogError($"Error getting HTML, currently does not exist quotation USD: {htmlPage}");
                 await _slackHooksService.SendNotification(_httpClient);
-                return null;
+                result.AddError("Html Error Bna", "Error getting HTML, currently does not exist quotation USD.");
+                return result;
             }
 
             var usdQuotation = dateTime == null ? document.GetElementsByTagName("tr").LastOrDefault() : 
@@ -92,7 +94,8 @@ namespace UsdQuotation.Services
             {
                 _logger.LogError($"Error getting HTML, please check HTML: {htmlPage}");
                 await _slackHooksService.SendNotification(_httpClient);
-                return null;
+                result.AddError("Html Error Bna", "Error getting HTML, please check HTML.");
+                return result;
             }
 
             var buy = usdQuotation.GetElementsByTagName("td").ElementAtOrDefault(1);
@@ -103,17 +106,18 @@ namespace UsdQuotation.Services
             {
                 var dt = DateTime.Parse(date.InnerHtml, CultureInfo.CreateSpecificCulture("es-AR"));
 
-                return new Usd
+                return new EntityOperationResult<UsdCurrency>(new UsdCurrency
                 {
                     Date = dt.ToUniversalTime().ToString("u"),
                     SaleValue = sale.InnerHtml,
                     BuyValue = buy.InnerHtml
-                };
+                });
             }
 
             _logger.LogError($"Error getting HTML, please check HTML: {htmlPage}");
             await _slackHooksService.SendNotification(_httpClient);
-            return null;
+            result.AddError("Html Error Bna", "Error getting HTML, please check HTML.");
+            return result;
         }
 
         private static IElement GetQuotationByDate(IEnumerable<IElement> htmlData, DateTime? dateTime)

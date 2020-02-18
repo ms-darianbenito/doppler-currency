@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Security.Authentication;
 using CrossCutting;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -14,10 +15,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Polly;
 using Polly.Extensions.Http;
-using UsdQuotation.Services;
 using UsdQuotation.Settings;
 
-namespace UsdQuotation
+namespace Doppler.Currency
 {
     public class Startup
     {
