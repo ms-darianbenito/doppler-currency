@@ -6,7 +6,7 @@ using Doppler.Currency.Dtos;
 using Moq;
 using Xunit;
 
-namespace UsdQuotation.Test.Integration
+namespace Doppler.Currency.Test.Integration
 {
     public class UsdQuotationControllerTest : IClassFixture<TestServerFixture>
     {

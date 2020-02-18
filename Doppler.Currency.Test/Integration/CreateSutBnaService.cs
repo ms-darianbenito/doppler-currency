@@ -1,11 +1,11 @@
 ﻿using System.Net.Http;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Services;
+using Doppler.Currency.Settings;
 using Microsoft.Extensions.Logging;
 using Moq;
-using UsdQuotation.Settings;
 
-namespace UsdQuotation.Test.Integration
+namespace Doppler.Currency.Test.Integration
 {
     public static class CreateSutBnaService
     {

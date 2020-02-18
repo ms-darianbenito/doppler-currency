@@ -1,4 +1,4 @@
-﻿namespace UsdQuotation.Settings
+﻿namespace Doppler.Currency.Settings
 {
     public class BnaSettings
     {

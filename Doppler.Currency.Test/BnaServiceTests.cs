@@ -4,14 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Services;
+using Doppler.Currency.Settings;
+using Doppler.Currency.Test.Integration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using UsdQuotation.Settings;
-using UsdQuotation.Test.Integration;
 using Xunit;
 
-namespace UsdQuotation.Test
+namespace Doppler.Currency.Test
 {
     public class BnaServiceTests
     {

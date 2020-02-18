@@ -2,7 +2,6 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using CrossCutting.SlackHooksService;
-using Doppler.Currency;
 using Doppler.Currency.Services;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -10,7 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
-namespace UsdQuotation.Test.Integration
+namespace Doppler.Currency.Test.Integration
 {
     public class TestServerFixture : IDisposable
     {

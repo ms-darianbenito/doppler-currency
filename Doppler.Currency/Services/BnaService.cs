@@ -9,8 +9,8 @@ using AngleSharp.Html.Parser;
 using CrossCutting;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Dtos;
+using Doppler.Currency.Settings;
 using Microsoft.Extensions.Logging;
-using UsdQuotation.Settings;
 
 namespace Doppler.Currency.Services
 {
