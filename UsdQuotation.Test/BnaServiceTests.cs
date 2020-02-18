@@ -71,7 +71,7 @@ namespace UsdQuotation.Test
 
             var result = await service.GetUsdToday(null);
 
-            Assert.Equal("5/2/2020", result.Date);
+            Assert.Equal("2020-02-05 03:00:00Z", result.Date);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace UsdQuotation.Test
 
             var result = await service.GetUsdToday(null);
 
-            Assert.Equal(result.Date, "4/2/2020");
+            Assert.Equal("2020-02-04 03:00:00Z", result.Date);
         }
 
         [Fact]

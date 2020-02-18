@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -100,9 +101,11 @@ namespace UsdQuotation.Services
 
             if (buy != null && sale != null && date != null)
             {
+                var dt = DateTime.Parse(date.InnerHtml, CultureInfo.CreateSpecificCulture("es-AR"));
+
                 return new Usd
                 {
-                    Date = date.InnerHtml,
+                    Date = dt.ToUniversalTime().ToString("u"),
                     SaleValue = sale.InnerHtml,
                     BuyValue = buy.InnerHtml
                 };
