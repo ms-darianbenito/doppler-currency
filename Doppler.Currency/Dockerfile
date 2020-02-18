@@ -7,17 +7,17 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["UsdQuotation/UsdQuotation.csproj", "UsdQuotation/"]
+COPY ["Doppler.Currency/Doppler.Currency.csproj", "Doppler.Currency/"]
 COPY ["CrossCutting/CrossCutting.csproj", "CrossCutting/"]
-RUN dotnet restore "UsdQuotation/UsdQuotation.csproj"
+RUN dotnet restore "Doppler.Currency/Doppler.Currency.csproj"
 COPY . .
-WORKDIR "/src/UsdQuotation"
-RUN dotnet build "UsdQuotation.csproj" -c Release -o /app/build
+WORKDIR "/src/Doppler.Currency"
+RUN dotnet build "Doppler.Currency.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "UsdQuotation.csproj" -c Release -o /app/publish
+RUN dotnet publish "Doppler.Currency.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "UsdQuotation.dll"]
+ENTRYPOINT ["dotnet", "Doppler.Currency.dll"]
