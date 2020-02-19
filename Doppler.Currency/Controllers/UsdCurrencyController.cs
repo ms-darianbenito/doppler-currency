@@ -19,7 +19,7 @@ namespace Doppler.Currency.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(DateTime? date = null)
         {
-            if (date > DateTime.Now)
+            if (date > DateTime.UtcNow)
             {
                 return BadRequest("Date is not valid, please check again with format MM/dd/yyyy");
             }

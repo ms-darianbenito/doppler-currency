@@ -52,9 +52,9 @@ namespace Doppler.Currency
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "BNA API",
+                    Title = "Doppler Currency API",
                     Version = "v1",
-                    Description = "API for BNA"
+                    Description = "API for Doppler Currency"
                 });
             });
 
