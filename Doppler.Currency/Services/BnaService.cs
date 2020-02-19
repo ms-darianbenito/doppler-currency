@@ -30,10 +30,11 @@ namespace Doppler.Currency.Services
             (_httpClient,_bnaSettings, _slackHooksService, _logger) =
             (httpClientFactory.CreateClient(bnaClientPoliciesSettings.ClientName), bnaSettings, slackHooksService, logger);
 
-        public async Task<EntityOperationResult<UsdCurrency>> GetUsdToday(DateTime? date)
+        public async Task<EntityOperationResult<UsdCurrency>> GetUsdToday(DateTimeOffset? date)
         {
             // Construct URL
-            var dateUrl = date == null ? System.Web.HttpUtility.UrlEncode($"{DateTime.Now:dd/MM/yyyy}") :
+            var dateUrl = date == null ? System.Web.HttpUtility.UrlEncode(
+                    $"{DateTimeOffset.UtcNow.ToOffset(new TimeSpan(-3, 0, 0)):dd/MM/yyyy}") :
                 System.Web.HttpUtility.UrlEncode($"{date:dd/MM/yyyy}");
 
             var uri = new Uri(_bnaSettings.EndPoint + "&fecha=" + dateUrl);
@@ -54,7 +55,7 @@ namespace Doppler.Currency.Services
             return await GetDataFromHtmlAsync(htmlPage, date);
         }
 
-        private async Task<EntityOperationResult<UsdCurrency>> GetDataFromHtmlAsync(string htmlPage, DateTime? dateTime)
+        private async Task<EntityOperationResult<UsdCurrency>> GetDataFromHtmlAsync(string htmlPage, DateTimeOffset? dateTime)
         {
             var result = new EntityOperationResult<UsdCurrency>();
             var parser = new HtmlParser();
@@ -105,10 +106,9 @@ namespace Doppler.Currency.Services
             if (buy != null && sale != null && date != null)
             {
                 var dt = DateTime.Parse(date.InnerHtml, CultureInfo.CreateSpecificCulture("es-AR"));
-
                 return new EntityOperationResult<UsdCurrency>(new UsdCurrency
                 {
-                    Date = dt.ToUniversalTime().ToString("u"),
+                    Date = dt.ToString("yyyy-MM-dd"),
                     SaleValue = sale.InnerHtml,
                     BuyValue = buy.InnerHtml
                 });
@@ -120,7 +120,7 @@ namespace Doppler.Currency.Services
             return result;
         }
 
-        private static IElement GetQuotationByDate(IEnumerable<IElement> htmlData, DateTime? dateTime)
+        private static IElement GetQuotationByDate(IEnumerable<IElement> htmlData, DateTimeOffset? dateTime)
         {
             foreach (var node in htmlData)
             {

@@ -17,9 +17,9 @@ namespace Doppler.Currency.Controllers
             (_logger, _bnaService) = (logger, bnaService);
 
         [HttpGet]
-        public async Task<IActionResult> Get(DateTime? date = null)
+        public async Task<IActionResult> Get(DateTimeOffset? date = null)
         {
-            if (date > DateTime.UtcNow)
+            if (date > DateTimeOffset.UtcNow.ToOffset(new TimeSpan(-3, 0, 0)))
             {
                 return BadRequest("Date is not valid, please check again with format MM/dd/yyyy");
             }

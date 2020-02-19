@@ -18,7 +18,7 @@ namespace Doppler.Currency.Test.Integration
         public async Task GetUsdToday_ShouldBeHttpStatusCodeOk_WhenBnaServiceReturnQuotationCorrectly()
         {
             //Arrange
-            _testServer.BnaServiceMock.Setup(x => x.GetUsdToday(It.IsAny<DateTime?>()))
+            _testServer.BnaServiceMock.Setup(x => x.GetUsdToday(It.IsAny<DateTimeOffset?>()))
                 .ReturnsAsync(new EntityOperationResult<UsdCurrency>(new UsdCurrency
                 {
                     BuyValue = "10",
@@ -47,7 +47,7 @@ namespace Doppler.Currency.Test.Integration
             //Arrange
             var result = new EntityOperationResult<UsdCurrency>();
             result.AddError("Error","Html error");
-            _testServer.BnaServiceMock.Setup(x => x.GetUsdToday(It.IsAny<DateTime?>()))
+            _testServer.BnaServiceMock.Setup(x => x.GetUsdToday(It.IsAny<DateTimeOffset?>()))
                 .ReturnsAsync(result);
 
             // Act

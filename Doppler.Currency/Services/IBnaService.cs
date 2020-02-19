@@ -7,6 +7,6 @@ namespace Doppler.Currency.Services
 {
     public interface IBnaService
     {
-        public Task<EntityOperationResult<UsdCurrency>> GetUsdToday(DateTime? date);
+        public Task<EntityOperationResult<UsdCurrency>> GetUsdToday(DateTimeOffset? date);
     }
 }

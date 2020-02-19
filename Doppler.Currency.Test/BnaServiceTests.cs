@@ -73,7 +73,7 @@ namespace Doppler.Currency.Test
 
             var result = await service.GetUsdToday(null);
 
-            Assert.Equal("2020-02-05 03:00:00Z", result.Entity.Date);
+            Assert.Equal("2020-02-05", result.Entity.Date);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace Doppler.Currency.Test
 
             var result = await service.GetUsdToday(null);
 
-            Assert.Equal("2020-02-04 03:00:00Z", result.Entity.Date);
+            Assert.Equal("2020-02-04", result.Entity.Date);
         }
 
         [Fact]
