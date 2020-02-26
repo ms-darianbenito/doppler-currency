@@ -1,8 +1,8 @@
 ﻿using System.Net.Http;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Logger;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
-using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Doppler.Currency.Test.Integration
@@ -14,14 +14,14 @@ namespace Doppler.Currency.Test.Integration
             HttpClientPoliciesSettings httpClientPoliciesSettings = null,
             BnaSettings bnaSettings = null,
             ISlackHooksService slackHooksService = null,
-            ILogger<BnaService> logger = null)
+            ILoggerAdapter<BnaService> logger = null)
         {
             return new BnaService(
                 httpClientFactory ?? Mock.Of<IHttpClientFactory>(),
                 httpClientPoliciesSettings ?? new HttpClientPoliciesSettings(),
                 bnaSettings ?? new BnaSettings(),
                 slackHooksService ?? Mock.Of<ISlackHooksService>(),
-                logger ?? Mock.Of<ILogger<BnaService>>());
+                logger ?? Mock.Of<ILoggerAdapter<BnaService>>());
         }
     }
 }
