@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -8,21 +8,43 @@ using Doppler.Currency.Logger;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
 using Doppler.Currency.Test.Integration;
+using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
 namespace Doppler.Currency.Test
 {
-    public class BnaServiceTests
+    public class BnaHandlerTests
     {
-        [Fact]
-        public async Task GetUsdToday_ShouldBeReturnUsdQuotationOfBna_WhenHtmlHaveTwoQuotationUsdToReturnOk()
-        {
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        private readonly Mock<IOptionsMonitor<UsdCurrencySettings>> _mockUsdCurrencySettings;
+        private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
+        private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
+        private readonly HttpClient _httpClient;
 
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
+        public BnaHandlerTests()
+        {
+            _mockUsdCurrencySettings = new Mock<IOptionsMonitor<UsdCurrencySettings>>();
+            _mockUsdCurrencySettings.Setup(x => x.Get(It.IsAny<string>()))
+                .Returns(new UsdCurrencySettings
+                {
+                    Url = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes&filtroDolar=1&filtroEuro=0",
+                    NoCurrency = "",
+                    CurrencyName = "",
+                    ValidationHtml = "Dolar U.S.A"
+                });
+
+            _httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
+            _httpClient = new HttpClient(_httpMessageHandlerMock.Object);
+        }
+
+        [Fact]
+        public async Task GetUsdCurrency_ShouldBeReturnUsdCurrencyOfBna_WhenHtmlHaveTwoCurrencyUsdToReturnOk()
+        {
+            var dateTime = new DateTime(2020, 02, 05);
+
+            _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
@@ -52,43 +74,38 @@ namespace Doppler.Currency.Test
                     </tr>
                     </tbody>
                     </table>
-                    </div>"),
+                    </div>")
                 });
 
-            var client = new HttpClient(mockHttpMessageHandler.Object);
-            httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
 
-            var service = CreateSutBnaService.CreateSut(
-                httpClientFactoryMock.Object,
+            var service = CreateSutCurrencyService.CreateSut(
+                _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
                 },
-                new BnaSettings
-                {
-                    EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
-                    ValidationHtml = "Dolar U.S.A"
-                },
+                _mockUsdCurrencySettings.Object,
                 Mock.Of<ISlackHooksService>(),
-                Mock.Of<ILoggerAdapter<BnaService>>());
+                Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetUsdToday(null);
+            var result = await service.GetUsdCurrencyByCountryAndDate(dateTime, "arg");
 
-            Assert.Equal("2020-02-05", result.Entity.Date);
+            Assert.Equal($"{dateTime:d/M/yyyy}", result.Entity.Date);
         }
 
         [Fact]
-        public async Task GetUsdToday_ShouldBeReturnUsdQuotationOfBna_WhenHtmlHaveOneQuotationUsdToReturnOk()
+        public async Task GetUsdCurrency_ShouldBeReturnUsdCurrencyOfBna_WhenHtmlHaveOneCurrencyUsdToReturnOk()
         {
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            var dateTime = new DateTime(2020, 02, 04);
 
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
+            _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(@"<div id='cotizacionesCercanas'>
+                    Content = new StringContent($@"<div id='cotizacionesCercanas'>
                     <table class='table table-bordered cotizador' style='float:none; width:100%; text-align: center;'>
                     <thead>
                     <tr>
@@ -107,38 +124,31 @@ namespace Doppler.Currency.Test
                     </tr>
                     </tbody>
                     </table>
-                    </div>"),
+                    </div>")
                 });
 
-            var client = new HttpClient(mockHttpMessageHandler.Object);
-            httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
 
-            var service = CreateSutBnaService.CreateSut(
-                httpClientFactoryMock.Object,
+            var service = CreateSutCurrencyService.CreateSut(
+                _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
                 },
-                new BnaSettings
-                {
-                    EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
-                    ValidationHtml = "Dolar U.S.A"
-                },
+                _mockUsdCurrencySettings.Object,
                 Mock.Of<ISlackHooksService>(),
-                Mock.Of<ILoggerAdapter<BnaService>>());
+                Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetUsdToday(null);
+            var result = await service.GetUsdCurrencyByCountryAndDate(dateTime, "Arg");
 
-            Assert.Equal("2020-02-04", result.Entity.Date);
+            Assert.Equal($"{dateTime:d/M/yyyy}", result.Entity.Date);
         }
 
         [Fact]
-        public async Task GetUsdToday_ShouldBeSendSlackNotificationError_WhenHtmlTitleIsNotCorrect()
+        public async Task GetUsdCurrency_ShouldBeSendSlackNotificationError_WhenHtmlTitleIsNotCorrect()
         {
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
+            _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
@@ -146,39 +156,35 @@ namespace Doppler.Currency.Test
                     Content = new StringContent(@"<div id='cotizacionesCercanas'></div>")
                 });
 
-            var client = new HttpClient(mockHttpMessageHandler.Object);
-            httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutBnaService.CreateSut(
-                httpClientFactoryMock.Object,
+            var service = CreateSutCurrencyService.CreateSut(
+                _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
                 },
-                new BnaSettings
-                {
-                    EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
-                    ValidationHtml = "Dolar U.S.A"
-                },
+                _mockUsdCurrencySettings.Object,
                 slackHooksServiceMock.Object,
-                Mock.Of<ILoggerAdapter<BnaService>>());
+                Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            await service.GetUsdToday(null);
+            await service.GetUsdCurrencyByCountryAndDate(DateTime.Now, "Arg");
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()), Times.Once);
+            slackHooksServiceMock.Verify(x => x.SendNotification(
+                    It.IsAny<HttpClient>(),
+                    It.IsAny<string>()),
+                Times.Once);
         }
 
         [Fact]
-        public async Task GetUsdToday_ShouldBeSendSlackNotificationError_WhenHtmlTableIsNotCorrect()
+        public async Task GetUsdCurrency_ShouldBeSendSlackNotificationError_WhenHtmlTableIsNotCorrect()
         {
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
+            _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
@@ -198,39 +204,42 @@ namespace Doppler.Currency.Test
                     <td>Dolar U.S.A</td></div>")
                 });
 
-            var client = new HttpClient(mockHttpMessageHandler.Object);
-            httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutBnaService.CreateSut(
-                httpClientFactoryMock.Object,
+            var service = CreateSutCurrencyService.CreateSut(
+                _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
                 },
-                new BnaSettings
-                {
-                    EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
-                    ValidationHtml = "Dolar U.S.A"
-                },
+                _mockUsdCurrencySettings.Object,
                 slackHooksServiceMock.Object,
-                Mock.Of<ILoggerAdapter<BnaService>>());
+                Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            await service.GetUsdToday(null);
+            var result = await service.GetUsdCurrencyByCountryAndDate(DateTime.Now, "Arg");
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()), Times.Once);
+            slackHooksServiceMock.Verify(x => x.SendNotification(
+                It.IsAny<HttpClient>(),
+                It.IsAny<string>()), Times.Never);
+
+            Assert.False(result.Success);
+            Assert.Equal(1, result.Errors.Count);
+            Assert.True(result.Errors.ContainsKey("Html Error Bna"));
+
+            result.Errors.TryGetValue("Html Error Bna", out var value);
+
+            Assert.True(result.Errors.Values.Contains(value));
         }
 
         [Fact]
-        public async Task GetUsdToday_ShouldBeSendSlackNotificationError_WhenThereIsNoQuotation()
+        public async Task GetUsdCurrency_ShouldBeNotSendSlackNotificationErrorAndReturnBadRequest_WhenThereIsNoCurrency()
         {
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
+            _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
@@ -250,44 +259,38 @@ namespace Doppler.Currency.Test
                     </ tbody > ")
                 });
 
-            var client = new HttpClient(mockHttpMessageHandler.Object);
-            httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutBnaService.CreateSut(
-                httpClientFactoryMock.Object,
+            var service = CreateSutCurrencyService.CreateSut(
+                _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
                 },
-                new BnaSettings
-                {
-                    EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes",
-                    ValidationHtml = "Dolar U.S.A",
-                    NoCurrency = "Check this value"
-                },
+                _mockUsdCurrencySettings.Object,
                 slackHooksServiceMock.Object,
-                Mock.Of<ILoggerAdapter<BnaService>>());
+                Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetUsdToday(DateTimeOffset.UtcNow.AddYears(1));
+            var result = await service.GetUsdCurrencyByCountryAndDate(DateTime.UtcNow.AddYears(1), "Arg");
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
-                It.IsAny<HttpClient>(), 
+                It.IsAny<HttpClient>(),
                 It.IsAny<string>()), Times.Never);
 
-            Assert.Equal(1,result.Errors.Count);
+            Assert.Equal(1, result.Errors.Count);
             Assert.False(result.Success);
             Assert.True(result.Errors.ContainsKey("No USD for this date"));
         }
 
         [Fact]
-        public async Task GetUsdToday_ShouldBeLogginInformationWithUrl_WhenCallBnaServiceOk()
+        public async Task GetUsdCurrency_ShouldBeLoginInformationWithUrl_WhenCallBnaServiceOk()
         {
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
+            _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
@@ -307,41 +310,37 @@ namespace Doppler.Currency.Test
                     </ tbody > ")
                 });
 
-            var client = new HttpClient(mockHttpMessageHandler.Object);
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-            httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
                 .Verifiable();
 
-            var loggerMock = new Mock<ILoggerAdapter<BnaService>>();
+            var loggerMock = new Mock<ILoggerAdapter<CurrencyHandler>>();
 
-            var service = CreateSutBnaService.CreateSut(
-                httpClientFactoryMock.Object,
+            var service = CreateSutCurrencyService.CreateSut(
+                _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
                 },
-                new BnaSettings
-                {
-                    EndPoint = "https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes&filtroDolar=1&filtroEuro=0",
-                    ValidationHtml = "Dolar U.S.A",
-                    NoCurrency = "Check this value"
-                },
+                _mockUsdCurrencySettings.Object,
                 slackHooksServiceMock.Object,
-                loggerMock.Object);
-            
-            var result = await service.GetUsdToday(null);
+                loggerService: Mock.Of<ILoggerAdapter<CurrencyService>>(),
+                loggerHandler: loggerMock.Object);
+
+            var result = await service.GetUsdCurrencyByCountryAndDate(DateTime.Now, "Arg");
 
             Assert.False(result.Success);
 
             var dateNow = DateTime.Now;
             var month = dateNow.Month.ToString("d2");
+            var day = dateNow.Day.ToString("d2");
 
             var urlCheck =
-                $"https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes&filtroDolar=1&filtroEuro=0&fecha={dateNow.Day}%2f{month}%2f{dateNow.Year}";
-            
+                $"https://bna.com.ar/Cotizador/HistoricoPrincipales?id=billetes&filtroDolar=1&filtroEuro=0&fecha={day}%2f{month}%2f{dateNow.Year}";
+
             loggerMock.Verify(x => x.LogInformation(
                 $"Building http request with url {urlCheck}"), Times.Once);
         }
