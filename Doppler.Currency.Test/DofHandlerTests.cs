@@ -79,7 +79,7 @@ namespace Doppler.Currency.Test
 
             var result = await service.GetUsdCurrencyByCountryAndDate(dateTime, "mex");
             
-            Assert.Equal($"{dateTime:dd-MM-yyyy}", result.Entity.Date);
+            Assert.Equal($"{dateTime:dd/MM/yyyy}", result.Entity.Date);
         }
 
         [Fact]

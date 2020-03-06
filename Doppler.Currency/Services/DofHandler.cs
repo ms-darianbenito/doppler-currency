@@ -69,7 +69,7 @@ namespace Doppler.Currency.Services
                         {
                             return new EntityOperationResult<UsdCurrency>(new UsdCurrency
                             {
-                                Date = columnTime,
+                                Date = $"{date:dd/MM/yyyy}",
                                 SaleValue = columns.ElementAtOrDefault(3)?.InnerHtml,
                                 CurrencyName = ServiceSettings.CurrencyName
                             });

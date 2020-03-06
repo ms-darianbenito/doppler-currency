@@ -50,9 +50,7 @@ namespace Doppler.Currency.Services
             return await GetDataFromHtmlAsync(htmlPage, date);
         }
 
-        private async Task<EntityOperationResult<UsdCurrency>> GetDataFromHtmlAsync(
-            string htmlPage,
-            DateTime dateTime)
+        private async Task<EntityOperationResult<UsdCurrency>> GetDataFromHtmlAsync(string htmlPage, DateTime date)
         {
             var result = new EntityOperationResult<UsdCurrency>();
             var parser = new HtmlParser();
@@ -60,7 +58,7 @@ namespace Doppler.Currency.Services
 
             if (document.GetElementsByClassName("sinResultados").Any())
             {
-                Logger.LogInformation($"Does not exist currency USD for date {dateTime}");
+                Logger.LogInformation($"Does not exist currency USD for date {date}");
                 result.AddError("No USD for this date", ServiceSettings.NoCurrency);
                 return result;
             }
@@ -68,21 +66,21 @@ namespace Doppler.Currency.Services
             var titleValidation = document.GetElementsByTagName("tr").ElementAtOrDefault(1);
             if (titleValidation == null)
             {
-                await SendSlackNotification(htmlPage, dateTime, CurrencyType.Arg);
-                result.AddError("Html Error Bna", $"Error getting HTML, currently does not exist currency USD. Check Date {dateTime.ToShortDateString()}.");
+                await SendSlackNotification(htmlPage, date, CurrencyType.Arg);
+                result.AddError("Html Error Bna", $"Error getting HTML, currently does not exist currency USD. Check Date {date.ToShortDateString()}.");
                 return result;
             }
 
             var titleText = titleValidation.GetElementsByTagName("td").ElementAtOrDefault(0);
             if (titleText != null && !titleText.InnerHtml.Equals(ServiceSettings.ValidationHtml))
             {
-                await SendSlackNotification(htmlPage, dateTime, CurrencyType.Arg);
-                result.AddError("Html Error Bna", $"Error getting HTML, currently does not exist currency USD. Check date {dateTime.ToShortDateString()}.");
+                await SendSlackNotification(htmlPage, date, CurrencyType.Arg);
+                result.AddError("Html Error Bna", $"Error getting HTML, currently does not exist currency USD. Check date {date.ToShortDateString()}.");
                 return result;
             }
 
             var tableRows = document.QuerySelectorAll("table > tbody > tr");
-            var usdCurrency = GetCurrencyByDate(tableRows, dateTime);
+            var usdCurrency = GetCurrencyByDate(tableRows, date);
 
             if (usdCurrency == null)
             {
@@ -93,23 +91,23 @@ namespace Doppler.Currency.Services
             }
 
             var columns = usdCurrency.GetElementsByTagName("td");
-            var buy = columns.ElementAtOrDefault(1);
-            var sale = columns.ElementAtOrDefault(2);
-            var date = columns.ElementAtOrDefault(3);
+            var buyColumn = columns.ElementAtOrDefault(1);
+            var saleColumn = columns.ElementAtOrDefault(2);
+            var dateColumn = columns.ElementAtOrDefault(3);
 
-            if (buy != null && sale != null && date != null)
+            if (buyColumn != null && saleColumn != null && dateColumn != null)
             {
                 Logger.LogInformation("Creating UsdCurrency object to returned to the client.");
                 return new EntityOperationResult<UsdCurrency>(new UsdCurrency
                 {
-                    Date = date.InnerHtml,
-                    SaleValue = sale.InnerHtml,
-                    BuyValue = buy.InnerHtml,
+                    Date = $"{date:dd/MM/yyyy}",
+                    SaleValue = saleColumn.InnerHtml,
+                    BuyValue = buyColumn.InnerHtml,
                     CurrencyName = ServiceSettings.CurrencyName
                 });
             }
 
-            await SendSlackNotification(htmlPage, dateTime, CurrencyType.Arg);
+            await SendSlackNotification(htmlPage, date, CurrencyType.Arg);
             result.AddError("Html Error Bna", "Error getting HTML, please check HTML.");
             return result;
         }

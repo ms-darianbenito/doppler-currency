@@ -92,7 +92,7 @@ namespace Doppler.Currency.Test
 
             var result = await service.GetUsdCurrencyByCountryAndDate(dateTime, "arg");
 
-            Assert.Equal($"{dateTime:d/M/yyyy}", result.Entity.Date);
+            Assert.Equal($"{dateTime:dd/MM/yyyy}", result.Entity.Date);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace Doppler.Currency.Test
 
             var result = await service.GetUsdCurrencyByCountryAndDate(dateTime, "Arg");
 
-            Assert.Equal($"{dateTime:d/M/yyyy}", result.Entity.Date);
+            Assert.Equal($"{dateTime:dd/MM/yyyy}", result.Entity.Date);
         }
 
         [Fact]
