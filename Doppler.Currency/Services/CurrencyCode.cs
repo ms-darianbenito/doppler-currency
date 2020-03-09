@@ -4,11 +4,11 @@ using Newtonsoft.Json.Converters;
 namespace Doppler.Currency.Services
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum CurrencyType
+    public enum CurrencyCode
     {
-        [JsonProperty("arg")]
-        Arg = 1,
-        [JsonProperty("mex")]
-        Mex = 2,
+        [JsonProperty("ars")]
+        Ars = 1,
+        [JsonProperty("mxn")]
+        Mxn = 2
     }
 }

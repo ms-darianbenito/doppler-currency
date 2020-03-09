@@ -33,8 +33,8 @@ namespace Doppler.Currency
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<UsdCurrencySettings>("BnaService", Configuration.GetSection("BnaService"));
-            services.Configure<UsdCurrencySettings>("DofService", Configuration.GetSection("DofService"));
+            services.Configure<CurrencySettings>("BnaService", Configuration.GetSection("BnaService"));
+            services.Configure<CurrencySettings>("DofService", Configuration.GetSection("DofService"));
 
             services.AddControllers()
                 .AddJsonOptions(options => { options.JsonSerializerOptions.IgnoreNullValues = true; });
@@ -75,21 +75,21 @@ namespace Doppler.Currency
 
             services.AddTransient<DofHandler>();
             services.AddTransient<BnaHandler>();
-            services.AddTransient<IReadOnlyDictionary<CurrencyType, CurrencyHandler>>(sp => 
-                new Dictionary<CurrencyType, CurrencyHandler>
+            services.AddTransient<IReadOnlyDictionary<CurrencyCode, CurrencyHandler>>(sp => 
+                new Dictionary<CurrencyCode, CurrencyHandler>
                 {
-                    { CurrencyType.Arg, sp.GetRequiredService<BnaHandler>() },
-                    { CurrencyType.Mex, sp.GetRequiredService<DofHandler>() }
+                    { CurrencyCode.Ars, sp.GetRequiredService<BnaHandler>() },
+                    { CurrencyCode.Mxn, sp.GetRequiredService<DofHandler>() }
                 });
         }
 
         private void AddServiceSettings(IServiceCollection services)
         {
-            var dofSettings = new UsdCurrencySettings();
+            var dofSettings = new CurrencySettings();
             Configuration.GetSection("DofService").Bind(dofSettings);
             services.AddSingleton(dofSettings);
 
-            var bnaSettings = new UsdCurrencySettings();
+            var bnaSettings = new CurrencySettings();
             Configuration.GetSection("BnaService").Bind(bnaSettings);
             services.AddSingleton(bnaSettings);
 

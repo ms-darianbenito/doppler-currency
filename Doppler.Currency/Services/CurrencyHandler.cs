@@ -12,13 +12,13 @@ namespace Doppler.Currency.Services
     public abstract class CurrencyHandler
     {
         protected readonly HttpClient HttpClient;
-        protected readonly UsdCurrencySettings ServiceSettings;
+        protected readonly CurrencySettings ServiceSettings;
         protected readonly ISlackHooksService SlackHooksService;
         protected readonly ILoggerAdapter<CurrencyHandler> Logger;
 
         protected CurrencyHandler(
             HttpClient httpClient,
-            UsdCurrencySettings serviceSettings,
+            CurrencySettings serviceSettings,
             ISlackHooksService slackHooksService, 
             ILoggerAdapter<CurrencyHandler> logger)
         {
@@ -28,12 +28,12 @@ namespace Doppler.Currency.Services
             Logger = logger;
         }
 
-        public abstract Task<EntityOperationResult<UsdCurrency>> Handle(DateTime date);
+        public abstract Task<EntityOperationResult<Dtos.CurrencyDto>> Handle(DateTime date);
 
         protected async Task SendSlackNotification(
             string htmlPage,
             DateTime dateTime,
-            CurrencyType countryCode,
+            CurrencyCode countryCode,
             Exception e = null)
         {
             Logger.LogError(e ?? new Exception("Error getting HTML"),

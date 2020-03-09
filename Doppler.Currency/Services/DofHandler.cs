@@ -17,14 +17,14 @@ namespace Doppler.Currency.Services
         public DofHandler(
             IHttpClientFactory httpClientFactory,
             HttpClientPoliciesSettings dofClientPoliciesSettings,
-            IOptionsMonitor<UsdCurrencySettings> dofSettings,
+            IOptionsMonitor<CurrencySettings> dofSettings,
             ISlackHooksService slackHooksService,
             ILoggerAdapter<CurrencyHandler> logger) : base(httpClientFactory.CreateClient(dofClientPoliciesSettings.ClientName), dofSettings.Get("DofService"),
             slackHooksService, logger)
         {
         }
 
-        public override async Task<EntityOperationResult<UsdCurrency>> Handle(DateTime date)
+        public override async Task<EntityOperationResult<Dtos.CurrencyDto>> Handle(DateTime date)
         {
             // Construct URL
             Logger.LogInformation("building url to get html data.");
@@ -48,9 +48,9 @@ namespace Doppler.Currency.Services
             return await GetDataFromHtmlAsync(htmlPage, date);
         }
 
-        private async Task<EntityOperationResult<UsdCurrency>> GetDataFromHtmlAsync(string htmlPage, DateTime date)
+        private async Task<EntityOperationResult<Dtos.CurrencyDto>> GetDataFromHtmlAsync(string htmlPage, DateTime date)
         {
-            var result = new EntityOperationResult<UsdCurrency>();
+            var result = new EntityOperationResult<Dtos.CurrencyDto>();
             var parser = new HtmlParser();
             var document = parser.ParseDocument(htmlPage);
 
@@ -67,7 +67,7 @@ namespace Doppler.Currency.Services
 
                         if (columnTime == $"{date:dd-MM-yyyy}")
                         {
-                            return new EntityOperationResult<UsdCurrency>(new UsdCurrency
+                            return new EntityOperationResult<Dtos.CurrencyDto>(new Dtos.CurrencyDto
                             {
                                 Date = $"{date:dd/MM/yyyy}",
                                 SaleValue = columns.ElementAtOrDefault(3)?.InnerHtml.Replace(".",","),
@@ -79,13 +79,13 @@ namespace Doppler.Currency.Services
             }
             catch (Exception e)
             {
-                await SendSlackNotification(htmlPage, date, CurrencyType.Mex, e);
-                result.AddError("Html Error Mex currency", "Error getting HTML or date is holiday, please check HTML.");
+                await SendSlackNotification(htmlPage, date, CurrencyCode.Mxn, e);
+                result.AddError("Html Error Mxn currency", "Error getting HTML or date is holiday, please check HTML.");
                 return result;
             }
 
-            await SendSlackNotification(htmlPage, date, CurrencyType.Mex);
-            result.AddError("Html Error Mex currency", "Error getting HTML or date is holiday, please check HTML.");
+            await SendSlackNotification(htmlPage, date, CurrencyCode.Mxn);
+            result.AddError("Html Error Mxn currency", "Error getting HTML or date is holiday, please check HTML.");
             return result;
         }
     }
