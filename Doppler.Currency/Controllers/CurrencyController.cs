@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Doppler.Currency.Dtos;
+using Doppler.Currency.Enums;
 using Doppler.Currency.Logger;
 using Doppler.Currency.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -20,11 +21,11 @@ namespace Doppler.Currency.Controllers
 
         [HttpGet("{currencyCode}/{date}")]
         [SwaggerOperation(Summary = "Get currency by country and date")]
-        [SwaggerResponse(200, "The currency is ok", typeof(Dtos.CurrencyDto))]
+        [SwaggerResponse(200, "The currency is ok", typeof(CurrencyDto))]
         [SwaggerResponse(400, "The currency data is invalid")]
         public async Task<IActionResult> Get(
             [SwaggerParameter(Description = "dd-MM-yyyy")] string date,
-            [SwaggerParameter(Description = "ARS, MXN")] string currencyCode)
+            [SwaggerParameter(Description = "ARS, MXN")] CurrencyCodeEnum currencyCode)
         {
             _logger.LogInformation("Parsing dateTime");
             DateTime.TryParse(date, out var dateTime);

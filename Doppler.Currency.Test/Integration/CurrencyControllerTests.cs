@@ -6,6 +6,8 @@ using CrossCutting;
 using Moq;
 using Xunit;
 using Doppler.Currency.Dtos;
+using Doppler.Currency.Enums;
+using Doppler.Currency.Services;
 
 namespace Doppler.Currency.Test.Integration
 {
@@ -33,7 +35,7 @@ namespace Doppler.Currency.Test.Integration
             //Arrange
             _testServer.CurrencyServiceMock.Setup(x => x.GetCurrencyByCurrencyCodeAndDate(
                     It.IsAny<DateTime>(),
-                    It.IsAny<string>()))
+                    It.IsAny<CurrencyCodeEnum>()))
                 .ReturnsAsync(new EntityOperationResult<CurrencyDto>(new CurrencyDto
                 {
                     BuyValue = "10",
@@ -59,17 +61,17 @@ namespace Doppler.Currency.Test.Integration
         public async Task GetCurrency_ShouldBeHttpStatusCodeNotFound_WhenUrlDoesNotHaveDateTime()
         {
             // Act
-            var response = await _client.GetAsync("UsdCurrency/Arg");
+            var response = await _client.GetAsync("Currency/Ars");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
-        public async Task GetUsdCurrency_ShouldBeHttpStatusCodeNotFound_WhenUrlDoesNotHaveCountryCode()
+        public async Task GetCurrency_ShouldBeHttpStatusCodeNotFound_WhenUrlDoesNotHaveCurrencyCode()
         {
             // Act
-            var response = await _client.GetAsync("UsdCurrency/02-02-2020");
+            var response = await _client.GetAsync("Currency/02-02-2020");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -84,7 +86,7 @@ namespace Doppler.Currency.Test.Integration
             result.AddError("Currency code invalid", $"Currency code invalid: {currencyCode}");
             _testServer.CurrencyServiceMock.Setup(x => x.GetCurrencyByCurrencyCodeAndDate(
                     It.IsAny<DateTime>(),
-                    It.IsAny<string>()))
+                    It.IsAny<CurrencyCodeEnum>()))
                 .ReturnsAsync(result);
 
             // Act
@@ -143,6 +145,21 @@ namespace Doppler.Currency.Test.Integration
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("TEST")]
+        [InlineData("ARGentina")]
+        [InlineData("mexico")]
+        [InlineData(" ")]
+        public async Task GetCurrency_ShouldBeHttpStatusCodeNotFound_WhenUrlDoesHaveCurrencyCodeInvalid(
+            string currencyCode)
+        {
+            // Act
+            var response = await _client.GetAsync($"Currency/{currencyCode}/2020-2-7");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Enums;
 using Doppler.Currency.Logger;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
@@ -40,7 +41,7 @@ namespace Doppler.Currency.Test
         }
 
         [Fact]
-        public async Task GetUsdCurrency_ShouldBeReturnUsdCurrencyOfBna_WhenHtmlHaveTwoCurrencyUsdToReturnOk()
+        public async Task GetCurrency_ShouldBeReturnUsdCurrencyOfBna_WhenHtmlHaveTwoCurrencyToReturnOk()
         {
             var dateTime = new DateTime(2020, 02, 05);
 
@@ -90,13 +91,13 @@ namespace Doppler.Currency.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, "ars");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Ars);
 
-            Assert.Equal($"{dateTime:dd/MM/yyyy}", result.Entity.Date);
+            Assert.Equal($"{dateTime:yyyy/MM/dd}", result.Entity.Date);
         }
 
         [Fact]
-        public async Task GetUsdCurrency_ShouldBeReturnCurrencyOfBna_WhenHtmlHaveOneCurrencyToReturnOk()
+        public async Task GetCurrency_ShouldBeReturnCurrencyOfBna_WhenHtmlHaveOneCurrencyToReturnOk()
         {
             var dateTime = new DateTime(2020, 02, 04);
 
@@ -140,13 +141,13 @@ namespace Doppler.Currency.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, "Ars");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Ars);
 
-            Assert.Equal($"{dateTime:dd/MM/yyyy}", result.Entity.Date);
+            Assert.Equal($"{dateTime:yyyy/MM/dd}", result.Entity.Date);
         }
 
         [Fact]
-        public async Task GetUsdCurrency_ShouldBeSendSlackNotificationError_WhenHtmlTitleIsNotCorrect()
+        public async Task GetCurrency_ShouldBeSendSlackNotificationError_WhenHtmlTitleIsNotCorrect()
         {
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -175,7 +176,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, "Ars");
+            await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
                     It.IsAny<HttpClient>(),
@@ -184,7 +185,7 @@ namespace Doppler.Currency.Test
         }
 
         [Fact]
-        public async Task GetUsdCurrency_ShouldBeSendSlackNotificationError_WhenHtmlTableIsNotCorrect()
+        public async Task GetCurrency_ShouldBeSendSlackNotificationError_WhenHtmlTableIsNotCorrect()
         {
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -223,7 +224,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, "Ars");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
                 It.IsAny<HttpClient>(),
@@ -239,7 +240,7 @@ namespace Doppler.Currency.Test
         }
 
         [Fact]
-        public async Task GetUsdCurrency_ShouldBeNotSendSlackNotificationErrorAndReturnBadRequest_WhenThereIsNoCurrency()
+        public async Task GetCurrency_ShouldBeNotSendSlackNotificationErrorAndReturnBadRequest_WhenThereIsNoCurrency()
         {
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -280,7 +281,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.UtcNow.AddYears(1), "Ars");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.UtcNow.AddYears(1), CurrencyCodeEnum.Ars);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
                 It.IsAny<HttpClient>(),
@@ -292,7 +293,7 @@ namespace Doppler.Currency.Test
         }
 
         [Fact]
-        public async Task GetUsdCurrency_ShouldBeTraceLogInformationWithUrl_WhenCallBnaServiceOk()
+        public async Task GetCurrency_ShouldBeTraceLogInformationWithUrl_WhenCallBnaServiceOk()
         {
             var dateTime = DateTime.UtcNow;
 
@@ -336,7 +337,7 @@ namespace Doppler.Currency.Test
                 loggerService: Mock.Of<ILoggerAdapter<CurrencyService>>(),
                 loggerHandler: loggerMock.Object);
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCode.Ars.ToString());
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
 
             Assert.False(result.Success);
 

@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Doppler.Currency.Services
+namespace Doppler.Currency.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum CurrencyCode
+    public enum CurrencyCodeEnum
     {
         [JsonProperty("ars")]
         Ars = 1,

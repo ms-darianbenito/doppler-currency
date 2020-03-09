@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Enums;
 using Doppler.Currency.Logger;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
@@ -32,31 +33,31 @@ namespace Doppler.Currency.Test
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
         }
 
-        [Theory]
-        [InlineData("TEST")]
-        [InlineData("ARGentina")]
-        [InlineData("mexico")]
-        [InlineData("")]
-        [InlineData(" ")]
-        [InlineData("/")]
-        public async Task GetUsdCurrency_ShouldBeHttpStatusCodeBadRequest_WhenCountryCodeIsInvalid(string currencyCode)
-        {
-            var service = CreateSutCurrencyService.CreateSut(
-                _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
-                _mockUsdCurrencySettings.Object,
-                Mock.Of<ISlackHooksService>(),
-                Mock.Of<ILoggerAdapter<CurrencyHandler>>());
+        //[Theory]
+        //[InlineData("TEST")]
+        //[InlineData("ARGentina")]
+        //[InlineData("mexico")]
+        //[InlineData("")]
+        //[InlineData(" ")]
+        //[InlineData("/")]
+        //public async Task GetCurrency_ShouldBeHttpStatusCodeBadRequest_WhenCurrencyCodeIsInvalid(string currencyCode)
+        //{
+        //    var service = CreateSutCurrencyService.CreateSut(
+        //        _httpClientFactoryMock.Object,
+        //        new HttpClientPoliciesSettings
+        //        {
+        //            ClientName = "test"
+        //        },
+        //        _mockUsdCurrencySettings.Object,
+        //        Mock.Of<ISlackHooksService>(),
+        //        Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, currencyCode);
+        //    var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, currencyCode);
             
-            Assert.False(result.Success);
-            Assert.Equal(1, result.Errors.Count);
-            Assert.True(result.Errors.ContainsKey("Currency code invalid"));
-        }
+        //    Assert.False(result.Success);
+        //    Assert.Equal(1, result.Errors.Count);
+        //    Assert.True(result.Errors.ContainsKey("Currency code invalid"));
+        //}
 
         [Theory]
         [InlineData("ARS")]
@@ -81,7 +82,9 @@ namespace Doppler.Currency.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, currencyCode);
+            Enum.TryParse(typeof(CurrencyCodeEnum), currencyCode, true, out var parseResult);
+
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now,(CurrencyCodeEnum) parseResult);
 
             Assert.False(result.Success);
             Assert.Equal(1, result.Errors.Count);

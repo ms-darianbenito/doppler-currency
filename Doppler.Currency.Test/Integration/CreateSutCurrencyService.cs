@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Enums;
 using Doppler.Currency.Logger;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
@@ -34,10 +35,10 @@ namespace Doppler.Currency.Test.Integration
                 slackHooksService,
                 loggerHandler ?? Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var handler = new Dictionary<CurrencyCode, CurrencyHandler>
+            var handler = new Dictionary<CurrencyCodeEnum, CurrencyHandler>
             {
-                { CurrencyCode.Ars, bnaHandler },
-                { CurrencyCode.Mxn, dofHandler }
+                { CurrencyCodeEnum.Ars, bnaHandler },
+                { CurrencyCodeEnum.Mxn, dofHandler }
             };
 
             return new CurrencyService(

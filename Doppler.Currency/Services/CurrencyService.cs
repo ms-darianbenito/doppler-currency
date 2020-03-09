@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CrossCutting;
 using Doppler.Currency.Dtos;
+using Doppler.Currency.Enums;
 using Doppler.Currency.Logger;
 
 namespace Doppler.Currency.Services
@@ -10,20 +11,22 @@ namespace Doppler.Currency.Services
     public class CurrencyService : ICurrencyService
     {
         private readonly ILoggerAdapter<CurrencyService> _logger;
-        private readonly IReadOnlyDictionary<CurrencyCode, CurrencyHandler> _currencyHandlers;
+        private readonly IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler> _currencyHandlers;
 
         public CurrencyService(
             ILoggerAdapter<CurrencyService> logger,
-            IReadOnlyDictionary<CurrencyCode, CurrencyHandler> currencyHandlers) =>
+            IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler> currencyHandlers) =>
             (_logger, _currencyHandlers) = (logger, currencyHandlers);
 
-        public async Task<EntityOperationResult<Dtos.CurrencyDto>> GetCurrencyByCurrencyCodeAndDate(DateTime date, string currencyCode)
+        public async Task<EntityOperationResult<CurrencyDto>> GetCurrencyByCurrencyCodeAndDate(
+            DateTime date,
+            CurrencyCodeEnum currencyCode)
         {
+            var result = new EntityOperationResult<CurrencyDto>();
             try
             {
                 _logger.LogInformation("Service Getting currency code handler.");
-                Enum.TryParse(typeof(CurrencyCode), currencyCode, true, out var result);
-                _currencyHandlers.TryGetValue((CurrencyCode) result, out var handler);
+                _currencyHandlers.TryGetValue(currencyCode, out var handler);
 
                 if (handler != null)
                     return await handler.Handle(date);
@@ -31,12 +34,12 @@ namespace Doppler.Currency.Services
             catch (Exception e)
             {
                 _logger.LogError(e,"Invalid currency code.");
-                var result2 = new EntityOperationResult<Dtos.CurrencyDto>();
-                result2.AddError("Currency code invalid", $"Currency code invalid: {currencyCode}");
-                return result2;
+                result.AddError("Currency code invalid", $"Currency code invalid: {currencyCode}.");
+                return result;
             }
 
-            return null;
+            result.AddError("Currency code invalid", $"Currency code invalid: {currencyCode}.");
+            return result;
         }
     }
 }

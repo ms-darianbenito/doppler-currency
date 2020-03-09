@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting.SlackHooksService;
+using Doppler.Currency.Enums;
 using Doppler.Currency.Logger;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
@@ -77,9 +78,9 @@ namespace Doppler.Currency.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, "mxn");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Mxn);
             
-            Assert.Equal($"{dateTime:dd/MM/yyyy}", result.Entity.Date);
+            Assert.Equal($"{dateTime:yyyy/MM/dd}", result.Entity.Date);
         }
 
         [Fact]
@@ -127,7 +128,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, "Mxn");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Mxn);
 
             Assert.False(result.Success);
             slackHooksServiceMock.Verify(x => x.SendNotification(
@@ -176,7 +177,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILoggerAdapter<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, "Mxn");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Mxn);
 
             Assert.False(result.Success);
 
@@ -237,7 +238,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 loggerMock.Object);
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, "Mxn");
+            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Mxn);
 
             Assert.False(result.Success);
 

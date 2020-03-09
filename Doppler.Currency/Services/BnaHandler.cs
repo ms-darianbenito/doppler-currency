@@ -8,6 +8,7 @@ using AngleSharp.Html.Parser;
 using CrossCutting;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Dtos;
+using Doppler.Currency.Enums;
 using Doppler.Currency.Logger;
 using Doppler.Currency.Settings;
 using Microsoft.Extensions.Options;
@@ -26,7 +27,7 @@ namespace Doppler.Currency.Services
         {
         }
 
-        public override async Task<EntityOperationResult<Dtos.CurrencyDto>> Handle(DateTime date)
+        public override async Task<EntityOperationResult<CurrencyDto>> Handle(DateTime date)
         {
             // Construct URL
             Logger.LogInformation("building url to get html data.");
@@ -50,9 +51,9 @@ namespace Doppler.Currency.Services
             return await GetDataFromHtmlAsync(htmlPage, date);
         }
 
-        private async Task<EntityOperationResult<Dtos.CurrencyDto>> GetDataFromHtmlAsync(string htmlPage, DateTime date)
+        private async Task<EntityOperationResult<CurrencyDto>> GetDataFromHtmlAsync(string htmlPage, DateTime date)
         {
-            var result = new EntityOperationResult<Dtos.CurrencyDto>();
+            var result = new EntityOperationResult<CurrencyDto>();
             var parser = new HtmlParser();
             var document = parser.ParseDocument(htmlPage);
 
@@ -66,7 +67,7 @@ namespace Doppler.Currency.Services
             var titleValidation = document.GetElementsByTagName("tr").ElementAtOrDefault(1);
             if (titleValidation == null)
             {
-                await SendSlackNotification(htmlPage, date, CurrencyCode.Ars);
+                await SendSlackNotification(htmlPage, date, CurrencyCodeEnum.Ars);
                 result.AddError("Html Error Bna", $"Error getting HTML, currently does not exist currency USD. Check Date {date.ToShortDateString()}.");
                 return result;
             }
@@ -74,7 +75,7 @@ namespace Doppler.Currency.Services
             var titleText = titleValidation.GetElementsByTagName("td").ElementAtOrDefault(0);
             if (titleText != null && !titleText.InnerHtml.Equals(ServiceSettings.ValidationHtml))
             {
-                await SendSlackNotification(htmlPage, date, CurrencyCode.Ars);
+                await SendSlackNotification(htmlPage, date, CurrencyCodeEnum.Ars);
                 result.AddError("Html Error Bna", $"Error getting HTML, currently does not exist currency USD. Check date {date.ToShortDateString()}.");
                 return result;
             }
@@ -97,17 +98,11 @@ namespace Doppler.Currency.Services
 
             if (buyColumn != null && saleColumn != null && dateColumn != null)
             {
-                Logger.LogInformation("Creating UsdCurrency object to returned to the client.");
-                return new EntityOperationResult<Dtos.CurrencyDto>(new Dtos.CurrencyDto
-                {
-                    Date = $"{date:dd/MM/yyyy}",
-                    SaleValue = saleColumn.InnerHtml,
-                    BuyValue = buyColumn.InnerHtml,
-                    CurrencyName = ServiceSettings.CurrencyName
-                });
+                Logger.LogInformation("Creating Currency object to returned to the client.");
+                return CreateCurrency($"{date:yyyy/MM/dd}", saleColumn.InnerHtml, buyColumn.InnerHtml);
             }
 
-            await SendSlackNotification(htmlPage, date, CurrencyCode.Ars);
+            await SendSlackNotification(htmlPage, date, CurrencyCodeEnum.Ars);
             result.AddError("Html Error Bna", "Error getting HTML, please check HTML.");
             return result;
         }
