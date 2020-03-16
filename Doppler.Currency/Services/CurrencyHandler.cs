@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CrossCutting;
@@ -34,21 +35,25 @@ namespace Doppler.Currency.Services
         protected async Task SendSlackNotification(
             string htmlPage,
             DateTime dateTime,
-            CurrencyCodeEnum countryCode,
+            CurrencyCodeEnum currencyCode,
             Exception e = null)
         {
             Logger.LogError(e ?? new Exception("Error getting HTML"),
                 $"Error getting HTML, title is not valid, please check HTML: {htmlPage}");
-            await SlackHooksService.SendNotification(HttpClient, $"Can't get the USD currency from {countryCode} code country, please check Html in the log or if the date is holiday {dateTime}");
+            await SlackHooksService.SendNotification(HttpClient, $"Can't get currency from {currencyCode} currency code, please check Html in the log or if the date is holiday {dateTime.ToUniversalTime():yyyy-MM-dd}");
         }
 
-        protected EntityOperationResult<CurrencyDto> CreateCurrency(string date, string sale, string buy = null)
+        protected EntityOperationResult<CurrencyDto> CreateCurrency(DateTime date, string sale, string buy = null)
         {
+            var cultureInfo = CultureInfo.CreateSpecificCulture("es-AR");
+            var saleDecimal = Convert.ToDecimal(sale, cultureInfo);
+            var buyDecimal = Convert.ToDecimal(buy, cultureInfo);
+
             return new EntityOperationResult<CurrencyDto>(new CurrencyDto
             {
-                Date = date,
-                SaleValue = sale,
-                BuyValue = buy,
+                Date = $"{date.ToUniversalTime():yyyy-MM-dd}",
+                SaleValue = saleDecimal,
+                BuyValue = buyDecimal == 0 ? (decimal?) null : buyDecimal,
                 CurrencyName = ServiceSettings.CurrencyName
             });
         }

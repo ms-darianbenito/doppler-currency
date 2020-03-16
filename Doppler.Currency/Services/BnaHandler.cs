@@ -99,7 +99,7 @@ namespace Doppler.Currency.Services
             if (buyColumn != null && saleColumn != null && dateColumn != null)
             {
                 Logger.LogInformation("Creating Currency object to returned to the client.");
-                return CreateCurrency($"{date:yyyy/MM/dd}", saleColumn.InnerHtml, buyColumn.InnerHtml);
+                return CreateCurrency(date, saleColumn.InnerHtml, buyColumn.InnerHtml);
             }
 
             await SendSlackNotification(htmlPage, date, CurrencyCodeEnum.Ars);

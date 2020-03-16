@@ -80,7 +80,7 @@ namespace Doppler.Currency.Test
 
             var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Mxn);
             
-            Assert.Equal($"{dateTime:yyyy/MM/dd}", result.Entity.Date);
+            Assert.Equal("2020-02-05", result.Entity.Date);
         }
 
         [Fact]
