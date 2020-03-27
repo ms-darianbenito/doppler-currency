@@ -7,6 +7,7 @@ using Moq;
 using Xunit;
 using Doppler.Currency.Dtos;
 using Doppler.Currency.Enums;
+using Newtonsoft.Json;
 
 namespace Doppler.Currency.Test.Integration
 {
@@ -22,11 +23,15 @@ namespace Doppler.Currency.Test.Integration
         }
 
         [Theory]
-        [InlineData("1-2-2012", "ARS")]
-        [InlineData("01-02-2012", "mxn")]
-        [InlineData("01-2-2012", "MXN")]
-        [InlineData("1-02-2012", "mXn")]
-        public async Task GetCurrency_ShouldBeHttpStatusCodeOk_WhenDateAndCurrencyCodeAreCorrectly(string dateTime, string currencyCode)
+        [InlineData("1-2-2012", "ArS", "Peso Argentino", "ARS")]
+        [InlineData("01-02-2012", "mxn", "Peso Mexicano", "MXN")]
+        [InlineData("01-2-2012", "MXN", "Peso Mexicano", "MXN")]
+        [InlineData("1-02-2012", "mXn", "Peso Mexicano", "MXM")]
+        public async Task GetCurrency_ShouldBeHttpStatusCodeOk_WhenDateAndCurrencyCodeAreCorrectly(
+            string dateTime, 
+            string currencyCode,
+            string currencyName,
+            string expectedCurrencyCode)
         {
             //Arrange
             _testServer.CurrencyServiceMock.Setup(x => x.GetCurrencyByCurrencyCodeAndDate(
@@ -36,7 +41,9 @@ namespace Doppler.Currency.Test.Integration
                 {
                     BuyValue = 10.3434M,
                     SaleValue = 30.34M,
-                    Date = $"{DateTime.Parse(dateTime):yyyy-MM-dd}"
+                    Date = $"{DateTime.Parse(dateTime):yyyy-MM-dd}",
+                    CurrencyCode = expectedCurrencyCode,
+                    CurrencyName = currencyName
                 }));
 
             // Act
@@ -44,13 +51,16 @@ namespace Doppler.Currency.Test.Integration
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<EntityOperationResult<CurrencyDto>>(responseString);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotEmpty(responseString);
-            Assert.Contains("2012-01-02", responseString);
-            Assert.Contains("30.34", responseString);
-            Assert.Contains("10.3434", responseString);
+            Assert.Equal("2012-01-02", result.Entity.Date);
+            Assert.Equal(30.34M, result.Entity.SaleValue);
+            Assert.Equal(10.3434M, result.Entity.BuyValue);
+            Assert.Equal(expectedCurrencyCode, result.Entity.CurrencyCode);
+            Assert.Equal(currencyName, result.Entity.CurrencyName);
         }
 
         [Fact]
