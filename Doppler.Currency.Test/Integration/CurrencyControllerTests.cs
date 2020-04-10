@@ -57,7 +57,6 @@ namespace Doppler.Currency.Test.Integration
             var responseString = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<EntityOperationResult<CurrencyDto>>(responseString);
 
-            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotEmpty(responseString);
             Assert.Equal("2012-01-02", result.Entity.Date);
