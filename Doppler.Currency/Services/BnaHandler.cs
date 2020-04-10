@@ -35,7 +35,7 @@ namespace Doppler.Currency.Services
 
             var uri = new Uri(ServiceSettings.Url + "&fecha=" + dateUrl);
 
-            Logger.LogInformation($"Building http request with url {uri}");
+            Logger.LogInformation("Building http request with url {uri}", uri);
             var httpRequest = new HttpRequestMessage
             {
                 RequestUri = uri,
@@ -59,7 +59,7 @@ namespace Doppler.Currency.Services
 
             if (document.GetElementsByClassName("sinResultados").Any())
             {
-                Logger.LogInformation($"Does not exist currency USD for date {date}");
+                Logger.LogInformation("Not exist currency USD for date {date}.", date);
                 result.AddError("No USD for this date", ServiceSettings.NoCurrency);
                 return result;
             }
@@ -78,7 +78,7 @@ namespace Doppler.Currency.Services
             if (usdCurrency == null)
             {
                 Logger.LogError(new Exception("Error getting HTML"),
-                        $"Error getting HTML, please check is holiday : {htmlPage}");
+                        "Error getting HTML, please check is holiday : {htmlPage}", htmlPage);
                 result.AddError("Holiday Error", "Error getting date is holiday, please check Bna page.");
 
                 return result;
