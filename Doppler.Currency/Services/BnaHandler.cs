@@ -29,7 +29,6 @@ namespace Doppler.Currency.Services
 
         public override async Task<EntityOperationResult<CurrencyDto>> Handle(DateTime date)
         {
-            // Construct URL
             Logger.LogInformation("building url to get html data.");
             var dateUrl = System.Web.HttpUtility.UrlEncode($"{date:dd/MM/yyyy}");
 

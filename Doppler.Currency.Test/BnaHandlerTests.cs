@@ -168,7 +168,6 @@ namespace Doppler.Currency.Test
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
             slackHooksServiceMock.Setup(x => x.SendNotification(
-                    It.IsAny<HttpClient>(),
                     It.IsAny<string>()))
                 .Verifiable();
 
@@ -185,9 +184,7 @@ namespace Doppler.Currency.Test
             await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
-                    It.IsAny<HttpClient>(),
-                    It.IsAny<string>()),
-                Times.Once);
+                    It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -217,7 +214,7 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<string>()))
                 .Verifiable();
 
             var service = CreateSutCurrencyService.CreateSut(
@@ -232,9 +229,7 @@ namespace Doppler.Currency.Test
 
             var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(
-                It.IsAny<HttpClient>(),
-                It.IsAny<string>()), Times.Never);
+            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<string>()), Times.Never);
 
             Assert.False(result.Success);
             Assert.Equal(1, result.Errors.Count);
@@ -273,7 +268,6 @@ namespace Doppler.Currency.Test
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
             slackHooksServiceMock.Setup(x => x.SendNotification(
-                    It.IsAny<HttpClient>(),
                     It.IsAny<string>()))
                 .Verifiable();
 
@@ -290,7 +284,6 @@ namespace Doppler.Currency.Test
             var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.UtcNow.AddYears(1), CurrencyCodeEnum.Ars);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
-                It.IsAny<HttpClient>(),
                 It.IsAny<string>()), Times.Never);
 
             Assert.Equal(1, result.Errors.Count);
@@ -327,7 +320,7 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<string>()))
                 .Verifiable();
 
             var loggerMock = new Mock<ILogger<CurrencyHandler>>();
