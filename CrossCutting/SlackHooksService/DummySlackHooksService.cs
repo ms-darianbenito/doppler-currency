@@ -13,7 +13,7 @@ namespace CrossCutting.SlackHooksService
 
         public Task SendNotification(string message = null)
         {
-            _slackHookLogger.LogInformation("Non-existent Settings for Slack hook service.");
+            _slackHookLogger.LogInformation("Invalid Settings for Slack hook service.");
             return Task.CompletedTask;
         }
     }

@@ -14,12 +14,12 @@ namespace CrossCutting.SlackHooksService
     {
         private readonly JsonSerializerSettings _serializationSettings;
         private readonly SlackHookSettings _slackHookSettings;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public SlackHooksService(SlackHookSettings slackHookSettings, IHttpClientFactory httpClientFactory)
         {
             _slackHookSettings = slackHookSettings;
-            _httpClient = httpClientFactory.CreateClient();
+            _httpClientFactory = httpClientFactory;
 
             _serializationSettings = new JsonSerializerSettings
             {
@@ -47,12 +47,12 @@ namespace CrossCutting.SlackHooksService
 
                 var httpRequest = new HttpRequestMessage {RequestUri = builder.Uri, Method = new HttpMethod("POST")};
 
-                var requestContent =
-                    SafeJsonConvert.SerializeObject(JObject.FromObject(payloadData), _serializationSettings);
+                var requestContent = SafeJsonConvert.SerializeObject(JObject.FromObject(payloadData), _serializationSettings);
                 httpRequest.Content = new StringContent(requestContent, Encoding.UTF8);
                 httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
 
-                await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
+            var client = _httpClientFactory.CreateClient();
+            await client.SendAsync(httpRequest).ConfigureAwait(false);
         }
     }
 }

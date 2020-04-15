@@ -183,8 +183,7 @@ namespace Doppler.Currency.Test
 
             await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(
-                    It.IsAny<string>()), Times.Once);
+            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
