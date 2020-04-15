@@ -20,7 +20,7 @@ namespace Doppler.Currency.Services
             HttpClientPoliciesSettings dofClientPoliciesSettings,
             IOptionsMonitor<CurrencySettings> dofSettings,
             ISlackHooksService slackHooksService,
-            ILogger<CurrencyHandler> logger) : base(httpClientFactory.CreateClient(dofClientPoliciesSettings.ClientName), dofSettings.Get("DofService"),
+            ILogger<CurrencyHandler> logger) : base(httpClientFactory, dofClientPoliciesSettings, dofSettings.Get("DofService"),
             slackHooksService, logger)
         {
         }
@@ -41,7 +41,8 @@ namespace Doppler.Currency.Services
             };
 
             Logger.LogInformation("Sending request to Bna server.");
-            var httpResponse = await HttpClient.SendAsync(httpRequest).ConfigureAwait(false);
+            var client = HttpClientFactory.CreateClient(HttpClientPoliciesSettings.ClientName);
+            var httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
 
             Logger.LogInformation("Getting Html content of the Bna.");
             var htmlPage = await httpResponse.Content.ReadAsStringAsync();
