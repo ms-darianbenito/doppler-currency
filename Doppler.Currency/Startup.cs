@@ -4,8 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
-using CrossCutting;
-using CrossCutting.SlackHooksService;
 using Doppler.Currency.Enums;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
@@ -65,9 +63,7 @@ namespace Doppler.Currency
 
             services.AddTransient<ICurrencyService, CurrencyService>();
 
-            AddServiceSettings(services);
-
-            services.AddTransient<ISlackHooksService, SlackHooksService>();
+            services.AddSlackHook();
 
             services.AddTransient<DofHandler>();
             services.AddTransient<BnaHandler>();
@@ -77,21 +73,6 @@ namespace Doppler.Currency
                     { CurrencyCodeEnum.Ars, sp.GetRequiredService<BnaHandler>() },
                     { CurrencyCodeEnum.Mxn, sp.GetRequiredService<DofHandler>() }
                 });
-        }
-
-        private void AddServiceSettings(IServiceCollection services)
-        {
-            var dofSettings = new CurrencySettings();
-            Configuration.GetSection("CurrencyCode:DofService").Bind(dofSettings);
-            services.AddSingleton(dofSettings);
-
-            var bnaSettings = new CurrencySettings();
-            Configuration.GetSection("CurrencyCode:BnaService").Bind(bnaSettings);
-            services.AddSingleton(bnaSettings);
-
-            var slackHookSettings = new SlackHookSettings();
-            Configuration.GetSection("SlackHook").Bind(slackHookSettings);
-            services.AddSingleton(slackHookSettings);
         }
 
         private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(int retry)
@@ -120,8 +101,6 @@ namespace Doppler.Currency
             }
 
             app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

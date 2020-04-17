@@ -14,10 +14,13 @@ namespace CrossCutting.SlackHooksService
     {
         private readonly JsonSerializerSettings _serializationSettings;
         private readonly SlackHookSettings _slackHookSettings;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public SlackHooksService(SlackHookSettings slackHookSettings)
+        public SlackHooksService(SlackHookSettings slackHookSettings, IHttpClientFactory httpClientFactory)
         {
             _slackHookSettings = slackHookSettings;
+            _httpClientFactory = httpClientFactory;
+
             _serializationSettings = new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
@@ -33,24 +36,23 @@ namespace CrossCutting.SlackHooksService
             };
         }
 
-        public async Task<HttpResponseMessage> SendNotification(HttpClient httpClient, string message = null)
+        public async Task SendNotification(string message = null)
         {
             var payloadData = new
-            {
-                text = !string.IsNullOrEmpty(message) ? message : _slackHookSettings.Text
-            };
+                {
+                    text = !string.IsNullOrEmpty(message) ? message : _slackHookSettings.Text
+                };
 
-            var builder = new UriBuilder(_slackHookSettings.Url);
+                var builder = new UriBuilder(_slackHookSettings.Url);
 
-            var httpRequest = new HttpRequestMessage { RequestUri = builder.Uri, Method = new HttpMethod("POST") };
+                var httpRequest = new HttpRequestMessage {RequestUri = builder.Uri, Method = new HttpMethod("POST")};
 
-            var requestContent = SafeJsonConvert.SerializeObject(JObject.FromObject(payloadData), _serializationSettings);
-            httpRequest.Content = new StringContent(requestContent, Encoding.UTF8);
-            httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                var requestContent = SafeJsonConvert.SerializeObject(JObject.FromObject(payloadData), _serializationSettings);
+                httpRequest.Content = new StringContent(requestContent, Encoding.UTF8);
+                httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
 
-            var httpResponse = await httpClient.SendAsync(httpRequest).ConfigureAwait(false);
-
-            return httpResponse;
+            var client = _httpClientFactory.CreateClient();
+            await client.SendAsync(httpRequest).ConfigureAwait(false);
         }
     }
 }

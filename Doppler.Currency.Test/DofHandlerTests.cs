@@ -120,7 +120,7 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification( It.IsAny<string>()))
                 .Verifiable();
 
             var service = CreateSutCurrencyService.CreateSut(
@@ -137,8 +137,7 @@ namespace Doppler.Currency.Test
 
             Assert.False(result.Success);
             slackHooksServiceMock.Verify(x => x.SendNotification(
-                It.IsAny<HttpClient>(),
-                It.IsAny<string>()), 
+                    It.IsAny<string>()), 
                 Times.Once);
         }
 
@@ -169,7 +168,7 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<string>()))
                 .Verifiable();
 
             var service = CreateSutCurrencyService.CreateSut(
@@ -187,8 +186,7 @@ namespace Doppler.Currency.Test
             Assert.False(result.Success);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
-                It.IsAny<HttpClient>(), 
-                It.IsAny<string>()),
+                    It.IsAny<string>()),
                 Times.Once);
 
             Assert.Equal(1, result.Errors.Count);
@@ -228,7 +226,7 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<HttpClient>(), It.IsAny<string>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification( It.IsAny<string>()))
                 .Verifiable();
 
             var loggerMock = new Mock<ILogger<CurrencyHandler>>();
