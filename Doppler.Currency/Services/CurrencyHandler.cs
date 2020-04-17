@@ -13,18 +13,21 @@ namespace Doppler.Currency.Services
 {
     public abstract class CurrencyHandler
     {
-        protected readonly HttpClient HttpClient;
+        protected readonly IHttpClientFactory HttpClientFactory;
         protected readonly CurrencySettings ServiceSettings;
         protected readonly ISlackHooksService SlackHooksService;
         protected readonly ILogger<CurrencyHandler> Logger;
+        protected readonly HttpClientPoliciesSettings HttpClientPoliciesSettings;
 
         protected CurrencyHandler(
-            HttpClient httpClient,
+            IHttpClientFactory httpClientFactory,
+            HttpClientPoliciesSettings httpClientPoliciesSettings,
             CurrencySettings serviceSettings,
             ISlackHooksService slackHooksService, 
             ILogger<CurrencyHandler> logger)
         {
-            HttpClient = httpClient;
+            HttpClientFactory = httpClientFactory;
+            HttpClientPoliciesSettings = httpClientPoliciesSettings;
             ServiceSettings = serviceSettings;
             SlackHooksService = slackHooksService;
             Logger = logger;
