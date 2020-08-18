@@ -27,11 +27,11 @@ namespace Doppler.Currency.Controllers
         [SwaggerResponse(400, "The currency data is invalid")]
         public async Task<IActionResult> Get(
             [SwaggerParameter(Description = "yyyy-MM-dd")] DateTime date,
-            [SwaggerParameter(Description = "ARS=1, MXN=2")] CurrencyCodeEnum currencyCode)
+            [SwaggerParameter(Description = "ARS=1, MXN=2, COP=3")] CurrencyCodeEnum currencyCode)
         {
             _logger.LogInformation("Parsing dateTime");
 
-            if (date.Year == 1 || date.Date > DateTime.Now)
+            if (date.Date > DateTime.Now)
             {
                 return BadRequest($"Invalid Date {date}");
             }

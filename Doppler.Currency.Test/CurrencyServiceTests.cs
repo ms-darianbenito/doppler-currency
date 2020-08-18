@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -18,6 +19,7 @@ using Xunit;
 
 namespace Doppler.Currency.Test
 {
+    [ExcludeFromCodeCoverage]
     public class CurrencyServiceTests
     {
         private readonly Mock<IOptionsMonitor<CurrencySettings>> _mockUsdCurrencySettings;
@@ -70,11 +72,14 @@ namespace Doppler.Currency.Test
 
             Enum.TryParse(typeof(CurrencyCodeEnum), currencyCode, true, out var parseResult);
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(new DateTime(2020, 2, 4), (CurrencyCodeEnum) parseResult);
+            if (parseResult != null)
+            {
+                var result = await service.GetCurrencyByCurrencyCodeAndDate(new DateTime(2020, 2, 4), (CurrencyCodeEnum) parseResult);
 
-            Assert.True(result.Success);
-            Assert.Equal(0, result.Errors.Count);
-            Assert.False(result.Errors.ContainsKey("Currency code invalid"));
+                Assert.True(result.Success);
+                Assert.Equal(0, result.Errors.Count);
+                Assert.False(result.Errors.ContainsKey("Currency code invalid"));
+            }
         }
 
         public class CalculatorTestData : IEnumerable<object[]>

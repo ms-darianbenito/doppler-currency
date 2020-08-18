@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using CrossCutting;
 using CrossCutting.SlackHooksService;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Doppler.Currency
 {
+    [ExcludeFromCodeCoverage]
     public static class SlackHookServiceCollectionExtensions
     {
         public static IServiceCollection AddSlackHook(this IServiceCollection services)

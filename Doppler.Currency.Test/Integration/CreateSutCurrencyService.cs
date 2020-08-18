@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Enums;
@@ -10,6 +11,7 @@ using Moq;
 
 namespace Doppler.Currency.Test.Integration
 {
+    [ExcludeFromCodeCoverage]
     public static class CreateSutCurrencyService
     {
         public static CurrencyService CreateSut(
