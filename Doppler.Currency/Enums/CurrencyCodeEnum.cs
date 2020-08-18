@@ -9,6 +9,8 @@ namespace Doppler.Currency.Enums
         [JsonProperty("ars")]
         Ars = 1,
         [JsonProperty("mxn")]
-        Mxn = 2
+        Mxn = 2,
+        [JsonProperty("cop")]
+        Cop =3
     }
 }

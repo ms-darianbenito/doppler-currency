@@ -33,6 +33,7 @@ namespace Doppler.Currency
         {
             services.Configure<CurrencySettings>("BnaService", Configuration.GetSection("CurrencyCode:BnaService"));
             services.Configure<CurrencySettings>("DofService", Configuration.GetSection("CurrencyCode:DofService"));
+            services.Configure<CurrencySettings>("TrmService", Configuration.GetSection("CurrencyCode:TrmService"));
 
             services.AddControllers()
                 .AddJsonOptions(options => { options.JsonSerializerOptions.IgnoreNullValues = true; });
@@ -68,11 +69,13 @@ namespace Doppler.Currency
 
             services.AddTransient<DofHandler>();
             services.AddTransient<BnaHandler>();
+            services.AddTransient<TrmHandler>();
             services.AddTransient<IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler>>(sp => 
                 new Dictionary<CurrencyCodeEnum, CurrencyHandler>
                 {
                     { CurrencyCodeEnum.Ars, sp.GetRequiredService<BnaHandler>() },
-                    { CurrencyCodeEnum.Mxn, sp.GetRequiredService<DofHandler>() }
+                    { CurrencyCodeEnum.Mxn, sp.GetRequiredService<DofHandler>() },
+                    { CurrencyCodeEnum.Cop, sp.GetService<TrmHandler>() }
                 });
 
             services.AddDopplerSecurity();
