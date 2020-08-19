@@ -40,20 +40,21 @@ namespace Doppler.Currency.Services
             var httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
 
             Logger.LogInformation("Getting Html content of the Bna.");
-            var htmlPage = await httpResponse.Content.ReadAsStringAsync();
+            var jsonContent = await httpResponse.Content.ReadAsStringAsync();
 
-            return await GetDataFromHtmlAsync(htmlPage, date);
+            return await GetDataFromHtmlAsync(jsonContent, date);
         }
 
-        private async Task<EntityOperationResult<CurrencyDto>> GetDataFromHtmlAsync(string htmlPage, DateTime date)
+        private async Task<EntityOperationResult<CurrencyDto>> GetDataFromHtmlAsync(string jsonContent, DateTime date)
         {
             var result = new EntityOperationResult<CurrencyDto>();
-            dynamic data = JsonConvert.DeserializeObject(htmlPage);
+            dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
             if (data != null)
             {
                 result.Entity = new CurrencyDto
                 {
+                    Date = $"{date.ToUniversalTime():yyyy-MM-dd}",
                     SaleValue = data[0].valor,
                     CurrencyName = ServiceSettings.CurrencyName,
                     CurrencyCode = ServiceSettings.CurrencyCode.ToUpper()
@@ -61,7 +62,7 @@ namespace Doppler.Currency.Services
             }
             else
             {
-                await SendSlackNotification(htmlPage, date, CurrencyCodeEnum.Cop);
+                await SendSlackNotification(jsonContent, date, CurrencyCodeEnum.Cop);
                 result.AddError("Html Error COP currency", "Error getting currency.");
             }
 
