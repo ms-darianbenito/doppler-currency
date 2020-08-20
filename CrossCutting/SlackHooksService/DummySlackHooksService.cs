@@ -1,8 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace CrossCutting.SlackHooksService
 {
+    [ExcludeFromCodeCoverage]
     public class DummySlackHooksService : ISlackHooksService
     {
         private readonly ILogger<ISlackHooksService> _slackHookLogger;

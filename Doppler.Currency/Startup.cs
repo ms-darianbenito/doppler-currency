@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -20,6 +21,7 @@ using Polly.Extensions.Http;
 
 namespace Doppler.Currency
 {
+    [ExcludeFromCodeCoverage]
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -33,6 +35,7 @@ namespace Doppler.Currency
         {
             services.Configure<CurrencySettings>("BnaService", Configuration.GetSection("CurrencyCode:BnaService"));
             services.Configure<CurrencySettings>("DofService", Configuration.GetSection("CurrencyCode:DofService"));
+            services.Configure<CurrencySettings>("TrmService", Configuration.GetSection("CurrencyCode:TrmService"));
 
             services.AddControllers()
                 .AddJsonOptions(options => { options.JsonSerializerOptions.IgnoreNullValues = true; });
@@ -68,11 +71,13 @@ namespace Doppler.Currency
 
             services.AddTransient<DofHandler>();
             services.AddTransient<BnaHandler>();
+            services.AddTransient<TrmHandler>();
             services.AddTransient<IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler>>(sp => 
                 new Dictionary<CurrencyCodeEnum, CurrencyHandler>
                 {
                     { CurrencyCodeEnum.Ars, sp.GetRequiredService<BnaHandler>() },
-                    { CurrencyCodeEnum.Mxn, sp.GetRequiredService<DofHandler>() }
+                    { CurrencyCodeEnum.Mxn, sp.GetRequiredService<DofHandler>() },
+                    { CurrencyCodeEnum.Cop, sp.GetRequiredService<TrmHandler>() }
                 });
 
             services.AddDopplerSecurity();

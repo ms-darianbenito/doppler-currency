@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CrossCutting
 {
+    [ExcludeFromCodeCoverage]
     public class EntityOperationResult<TEntity> where TEntity : class
     {
         public TEntity Entity { get; set; }

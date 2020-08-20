@@ -71,6 +71,24 @@ namespace Doppler.Currency.Test.Integration
         }
 
         [Fact]
+        public async Task GetCurrency_ShouldBeHttpStatusCodeBadRequest_WhenResponseReturnAnError()
+        {
+            //Arrange
+            var result = new EntityOperationResult<CurrencyDto>();
+            result.AddError("","");
+            _testServer.CurrencyServiceMock.Setup(x => x.GetCurrencyByCurrencyCodeAndDate(
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CurrencyCodeEnum>()))
+                .ReturnsAsync(result);
+
+            // Act
+            var response = await _client.GetAsync("Currency/Ars/01-02-2012");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task GetCurrency_ShouldBeHttpStatusCodeNotFound_WhenUrlDoesNotHaveDateTime()
         {
             // Act
@@ -107,6 +125,17 @@ namespace Doppler.Currency.Test.Integration
 
             // Assert
             Assert.False(response.IsSuccessStatusCode);
+        }
+
+        [Fact]
+        public async Task GetCurrency_ShouldBeHttpStatusCodeBadRequest_WhenDateIsMajorThatDateNow()
+        {
+            // Act
+            var response = await _client.GetAsync("Currency/1/02-02-2550");
+
+            // Assert
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Theory]
