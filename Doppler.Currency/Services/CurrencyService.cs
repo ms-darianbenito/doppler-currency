@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using CrossCutting;
 using Doppler.Currency.Dtos;
 using Doppler.Currency.Enums;
+using Doppler.Currency.Handlers;
 using Microsoft.Extensions.Logging;
 
 namespace Doppler.Currency.Services
@@ -11,12 +11,15 @@ namespace Doppler.Currency.Services
     public class CurrencyService : ICurrencyService
     {
         private readonly ILogger<CurrencyService> _logger;
-        private readonly IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler> _currencyHandlers;
+        private readonly IHandlerFactory _factoryHandlers;
 
         public CurrencyService(
             ILogger<CurrencyService> logger,
-            IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler> currencyHandlers) =>
-            (_logger, _currencyHandlers) = (logger, currencyHandlers);
+            IHandlerFactory factoryHandlers)
+        {
+            _logger = logger;
+            _factoryHandlers = factoryHandlers;
+        }
 
         public async Task<EntityOperationResult<CurrencyDto>> GetCurrencyByCurrencyCodeAndDate(
             DateTime date,
@@ -26,7 +29,7 @@ namespace Doppler.Currency.Services
             try
             {
                 _logger.LogInformation("Service Getting currency code handler.");
-                _currencyHandlers.TryGetValue(currencyCode, out var handler);
+                var handler = _factoryHandlers.GetCurrencyHandler(currencyCode);
 
                 if (handler != null)
                     return await handler.Handle(date);

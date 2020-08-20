@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Security.Authentication;
 using Doppler.Currency.DopplerSecurity;
 using Doppler.Currency.Enums;
+using Doppler.Currency.Handlers;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
 using Microsoft.AspNetCore.Builder;
@@ -65,14 +66,15 @@ namespace Doppler.Currency
                 });
             });
 
-            services.AddTransient<ICurrencyService, CurrencyService>();
+            services.AddSingleton<ICurrencyService, CurrencyService>();
+            services.AddSingleton<IHandlerFactory, HandlerFactory>();
 
             services.AddSlackHook();
 
-            services.AddTransient<DofHandler>();
-            services.AddTransient<BnaHandler>();
-            services.AddTransient<TrmHandler>();
-            services.AddTransient<IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler>>(sp => 
+            services.AddSingleton<DofHandler>();
+            services.AddSingleton<BnaHandler>();
+            services.AddSingleton<TrmHandler>();
+            services.AddSingleton<IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler>>(sp => 
                 new Dictionary<CurrencyCodeEnum, CurrencyHandler>
                 {
                     { CurrencyCodeEnum.Ars, sp.GetRequiredService<BnaHandler>() },

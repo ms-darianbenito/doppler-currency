@@ -7,11 +7,12 @@ using CrossCutting;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Dtos;
 using Doppler.Currency.Enums;
+using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Doppler.Currency.Services
+namespace Doppler.Currency.Handlers
 {
     public class DofHandler : CurrencyHandler
     {

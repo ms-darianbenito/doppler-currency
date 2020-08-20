@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Enums;
+using Doppler.Currency.Handlers;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
 using Microsoft.Extensions.Logging;
