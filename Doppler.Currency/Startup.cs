@@ -77,7 +77,7 @@ namespace Doppler.Currency
                 {
                     { CurrencyCodeEnum.Ars, sp.GetRequiredService<BnaHandler>() },
                     { CurrencyCodeEnum.Mxn, sp.GetRequiredService<DofHandler>() },
-                    { CurrencyCodeEnum.Cop, sp.GetService<TrmHandler>() }
+                    { CurrencyCodeEnum.Cop, sp.GetRequiredService<TrmHandler>() }
                 });
 
             services.AddDopplerSecurity();

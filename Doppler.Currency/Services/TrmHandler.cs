@@ -35,11 +35,11 @@ namespace Doppler.Currency.Services
                 Method = new HttpMethod("GET")
             };
 
-            Logger.LogInformation("Sending request to Bna server.");
+            Logger.LogInformation("Sending request to Trm server.");
             var client = HttpClientFactory.CreateClient();
             var httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
 
-            Logger.LogInformation("Getting Html content of the Bna.");
+            Logger.LogInformation("Getting Html content of the Trm.");
             var jsonContent = await httpResponse.Content.ReadAsStringAsync();
 
             return await GetDataFromHtmlAsync(jsonContent, date);
