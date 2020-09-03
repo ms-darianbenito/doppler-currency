@@ -27,10 +27,10 @@ namespace Doppler.Currency.Test.Integration
         }
 
         [Theory]
-        [InlineData("1-2-2012", "ArS", "Peso Argentino", "ARS")]
-        [InlineData("01-02-2012", "mxn", "Peso Mexicano", "MXN")]
-        [InlineData("01-2-2012", "MXN", "Peso Mexicano", "MXN")]
-        [InlineData("1-02-2012", "mXn", "Peso Mexicano", "MXM")]
+        [InlineData("2012-1-2", "ArS", "Peso Argentino", "ARS")]
+        [InlineData("2012-01-02", "mxn", "Peso Mexicano", "MXN")]
+        [InlineData("2012-01-2", "MXN", "Peso Mexicano", "MXN")]
+        [InlineData("2012-1-02", "mXn", "Peso Mexicano", "MXM")]
         public async Task GetCurrency_ShouldBeHttpStatusCodeOk_WhenDateAndCurrencyCodeAreCorrectly(
             string dateTime, 
             string currencyCode,
@@ -46,6 +46,7 @@ namespace Doppler.Currency.Test.Integration
                 CurrencyCode = expectedCurrencyCode,
                 CurrencyName = currencyName
             };
+
             _testServer.CurrencyServiceMock.Setup(x => x.GetCurrencyByCurrencyCodeAndDate(
                     It.IsAny<DateTime>(),
                     It.IsAny<CurrencyCodeEnum>()))
