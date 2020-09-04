@@ -70,7 +70,8 @@ namespace Doppler.Currency.Test
 
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
                 .Returns(_httpClient);
-            var service = CreateSutCurrencyService.CreateSut(
+
+            var dofHandlder = new DofHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -80,7 +81,7 @@ namespace Doppler.Currency.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Mxn);
+            var result = await dofHandlder.Handle(dateTime);
             
             Assert.Equal("2020-02-05", result.Entity.Date);
             Assert.Equal(18.679700M, result.Entity.SaleValue);
@@ -123,7 +124,7 @@ namespace Doppler.Currency.Test
             slackHooksServiceMock.Setup(x => x.SendNotification( It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var dofHandlder = new DofHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -133,7 +134,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Mxn);
+            var result = await dofHandlder.Handle(DateTime.Now);
 
             Assert.False(result.Success);
             slackHooksServiceMock.Verify(x => x.SendNotification(
@@ -171,7 +172,7 @@ namespace Doppler.Currency.Test
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var dofHandlder = new DofHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -181,7 +182,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Mxn);
+            var result = await dofHandlder.Handle(DateTime.Now);
 
             Assert.False(result.Success);
 
@@ -231,7 +232,7 @@ namespace Doppler.Currency.Test
 
             var loggerMock = new Mock<ILogger<CurrencyHandler>>();
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var dofHandlder = new DofHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -241,7 +242,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 loggerMock.Object);
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Mxn);
+            var result = await dofHandlder.Handle(dateTime);
 
             Assert.False(result.Success);
 

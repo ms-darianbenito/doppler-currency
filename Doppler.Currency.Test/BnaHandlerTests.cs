@@ -83,7 +83,7 @@ namespace Doppler.Currency.Test
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
                 .Returns(_httpClient);
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var bnaHandler = new BnaHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -93,7 +93,7 @@ namespace Doppler.Currency.Test
                 Mock.Of<ISlackHooksService>(),
                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Ars);
+            var result = await bnaHandler.Handle(dateTime);
 
             Assert.Equal("2020-02-05", result.Entity.Date);
             Assert.Equal(58.0000M, result.Entity.BuyValue);
@@ -137,17 +137,17 @@ namespace Doppler.Currency.Test
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
                 .Returns(_httpClient);
 
-            var service = CreateSutCurrencyService.CreateSut(
-                _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
-                _mockUsdCurrencySettings.Object,
-                Mock.Of<ISlackHooksService>(),
-                Mock.Of<ILogger<CurrencyHandler>>());
+            var bnaHandler = new BnaHandler(
+                 _httpClientFactoryMock.Object,
+                 new HttpClientPoliciesSettings
+                 {
+                     ClientName = "test"
+                 },
+                 _mockUsdCurrencySettings.Object,
+                 Mock.Of<ISlackHooksService>(),
+                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Ars);
+            var result = await bnaHandler.Handle(dateTime);
 
             Assert.Equal("2020-02-04", result.Entity.Date);
         }
@@ -171,7 +171,7 @@ namespace Doppler.Currency.Test
                     It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var bnaHandler = new BnaHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -181,7 +181,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
+            await bnaHandler.Handle(DateTime.Now);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<string>()), Times.Once);
         }
@@ -216,7 +216,7 @@ namespace Doppler.Currency.Test
             slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var bnaHandler = new BnaHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -226,7 +226,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.Now, CurrencyCodeEnum.Ars);
+            var result = await bnaHandler.Handle(DateTime.Now);
 
             slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<string>()), Times.Never);
 
@@ -270,7 +270,7 @@ namespace Doppler.Currency.Test
                     It.IsAny<string>()))
                 .Verifiable();
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var bnaHandler = new BnaHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -280,7 +280,7 @@ namespace Doppler.Currency.Test
                 slackHooksServiceMock.Object,
                 Mock.Of<ILogger<CurrencyHandler>>());
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(DateTime.UtcNow.AddYears(1), CurrencyCodeEnum.Ars);
+            var result = await bnaHandler.Handle(DateTime.UtcNow.AddYears(1));
 
             slackHooksServiceMock.Verify(x => x.SendNotification(
                 It.IsAny<string>()), Times.Never);
@@ -324,7 +324,7 @@ namespace Doppler.Currency.Test
 
             var loggerMock = new Mock<ILogger<CurrencyHandler>>();
 
-            var service = CreateSutCurrencyService.CreateSut(
+            var bnaHandler = new BnaHandler(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
@@ -332,10 +332,9 @@ namespace Doppler.Currency.Test
                 },
                 _mockUsdCurrencySettings.Object,
                 slackHooksServiceMock.Object,
-                loggerService: Mock.Of<ILogger<CurrencyService>>(),
-                loggerHandler: loggerMock.Object);
+                loggerMock.Object);
 
-            var result = await service.GetCurrencyByCurrencyCodeAndDate(dateTime, CurrencyCodeEnum.Ars);
+            var result = await bnaHandler.Handle(dateTime);
 
             Assert.False(result.Success);
 

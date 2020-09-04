@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting.SlackHooksService;
 using Doppler.Currency.Enums;
+using Doppler.Currency.Factory;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
 using Doppler.Currency.Test.Integration;
@@ -26,6 +27,7 @@ namespace Doppler.Currency.Test
         private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
         private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
         private readonly HttpClient _httpClient;
+        private readonly Mock<ICurrencyFactory> _currencyFactoryMock;
 
         public CurrencyServiceTests()
         {
@@ -43,6 +45,7 @@ namespace Doppler.Currency.Test
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
             _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
             _httpClient = new HttpClient(_httpMessageHandlerMock.Object);
+            _currencyFactoryMock = new Mock<ICurrencyFactory>();
         }
 
         [Theory]
@@ -60,20 +63,17 @@ namespace Doppler.Currency.Test
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
                 .Returns(_httpClient);
 
-            var service = CreateSutCurrencyService.CreateSut(
-                _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
-                _mockUsdCurrencySettings.Object,
-                Mock.Of<ISlackHooksService>(),
-                Mock.Of<ILogger<CurrencyHandler>>());
-
             Enum.TryParse(typeof(CurrencyCodeEnum), currencyCode, true, out var parseResult);
+
+            var service = CreateSutCurrencyService.CreateSut(
+                Mock.Of<ILogger<CurrencyService>>(),
+                _currencyFactoryMock.Object);
 
             if (parseResult != null)
             {
+                _currencyFactoryMock.Setup(_ => _.CreateHandler(It.IsAny<CurrencyCodeEnum>()))
+                    .Returns(GetHandler((CurrencyCodeEnum)parseResult));
+
                 var result = await service.GetCurrencyByCurrencyCodeAndDate(new DateTime(2020, 2, 4), (CurrencyCodeEnum) parseResult);
 
                 Assert.True(result.Success);
@@ -145,6 +145,33 @@ namespace Doppler.Currency.Test
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        private CurrencyHandler GetHandler(CurrencyCodeEnum currencyCode)
+        {
+            switch (currencyCode)
+            {
+                case CurrencyCodeEnum.Ars:
+                    return new BnaHandler(_httpClientFactoryMock.Object,
+                                          Mock.Of<HttpClientPoliciesSettings>(),
+                                          _mockUsdCurrencySettings.Object,
+                                          Mock.Of<ISlackHooksService>(),
+                                          Mock.Of<ILogger<CurrencyHandler>>());
+                case CurrencyCodeEnum.Cop:
+                    return new TrmHandler(_httpClientFactoryMock.Object,
+                                          Mock.Of<HttpClientPoliciesSettings>(),
+                                          _mockUsdCurrencySettings.Object,
+                                          Mock.Of<ISlackHooksService>(),
+                                          Mock.Of<ILogger<CurrencyHandler>>());
+                case CurrencyCodeEnum.Mxn:
+                    return new DofHandler(_httpClientFactoryMock.Object,
+                                          Mock.Of<HttpClientPoliciesSettings>(),
+                                          _mockUsdCurrencySettings.Object,
+                                          Mock.Of<ISlackHooksService>(),
+                                          Mock.Of<ILogger<CurrencyHandler>>());
+                default:
+                    throw new ArgumentException();
+            }
         }
     }
 }

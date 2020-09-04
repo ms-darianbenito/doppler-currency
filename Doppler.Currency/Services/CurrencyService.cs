@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using CrossCutting;
 using Doppler.Currency.Dtos;
 using Doppler.Currency.Enums;
+using Doppler.Currency.Factory;
 using Microsoft.Extensions.Logging;
 
 namespace Doppler.Currency.Services
@@ -11,12 +11,12 @@ namespace Doppler.Currency.Services
     public class CurrencyService : ICurrencyService
     {
         private readonly ILogger<CurrencyService> _logger;
-        private readonly IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler> _currencyHandlers;
+        private readonly ICurrencyFactory _currencyFactory;
 
         public CurrencyService(
             ILogger<CurrencyService> logger,
-            IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler> currencyHandlers) =>
-            (_logger, _currencyHandlers) = (logger, currencyHandlers);
+            ICurrencyFactory currencyFactory) =>
+            (_logger, _currencyFactory) = (logger, currencyFactory);
 
         public async Task<EntityOperationResult<CurrencyDto>> GetCurrencyByCurrencyCodeAndDate(
             DateTime date,
@@ -26,10 +26,9 @@ namespace Doppler.Currency.Services
             try
             {
                 _logger.LogInformation("Service Getting currency code handler.");
-                _currencyHandlers.TryGetValue(currencyCode, out var handler);
 
-                if (handler != null)
-                    return await handler.Handle(date);
+                var currencyHandler = _currencyFactory.CreateHandler(currencyCode);
+                return await currencyHandler.Handle(date);
             }
             catch (Exception e)
             {
@@ -37,9 +36,6 @@ namespace Doppler.Currency.Services
                 result.AddError("Error to get currency", $"Please see log, currency code : {currencyCode} and date  {date}.");
                 return result;
             }
-
-            result.AddError("Currency code invalid", $"Currency code invalid: {currencyCode}.");
-            return result;
         }
     }
 }
