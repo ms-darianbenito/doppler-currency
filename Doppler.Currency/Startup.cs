@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
 using Doppler.Currency.DopplerSecurity;
-using Doppler.Currency.Enums;
+using Doppler.Currency.Factory;
 using Doppler.Currency.Services;
 using Doppler.Currency.Settings;
 using Microsoft.AspNetCore.Builder;
@@ -33,10 +33,6 @@ namespace Doppler.Currency
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CurrencySettings>("BnaService", Configuration.GetSection("CurrencyCode:BnaService"));
-            services.Configure<CurrencySettings>("DofService", Configuration.GetSection("CurrencyCode:DofService"));
-            services.Configure<CurrencySettings>("TrmService", Configuration.GetSection("CurrencyCode:TrmService"));
-
             services.AddControllers()
                 .AddJsonOptions(options => { options.JsonSerializerOptions.IgnoreNullValues = true; });
 
@@ -53,6 +49,18 @@ namespace Doppler.Currency
             services.AddHttpClient(httpClientPolicies.ClientName, c => { })
                 .ConfigurePrimaryHttpMessageHandler(() => handlerHttpClient)
                 .AddTransientHttpErrorPolicy(builder => GetRetryPolicy(httpClientPolicies.Policies.RetryAttemps));
+
+            services.Configure<CurrencySettings>("BnaService", Configuration.GetSection("CurrencyCode:BnaService"));
+            services.Configure<CurrencySettings>("DofService", Configuration.GetSection("CurrencyCode:DofService"));
+            services.Configure<CurrencySettings>("TrmService", Configuration.GetSection("CurrencyCode:TrmService"));
+
+            services.AddTransient<BnaHandler>();
+            services.AddTransient<DofHandler>();
+            services.AddTransient<TrmHandler>();
+
+            services.AddTransient<ICurrencyService, CurrencyService>();
+            services.AddTransient<ICurrencyFactory, CurrencyFactory>();
+
 
             services.AddSwaggerGen(c =>
             {
@@ -89,20 +97,8 @@ namespace Doppler.Currency
                 });
             });
 
-            services.AddTransient<ICurrencyService, CurrencyService>();
-
             services.AddSlackHook();
 
-            services.AddTransient<DofHandler>();
-            services.AddTransient<BnaHandler>();
-            services.AddTransient<TrmHandler>();
-            services.AddTransient<IReadOnlyDictionary<CurrencyCodeEnum, CurrencyHandler>>(sp => 
-                new Dictionary<CurrencyCodeEnum, CurrencyHandler>
-                {
-                    { CurrencyCodeEnum.Ars, sp.GetRequiredService<BnaHandler>() },
-                    { CurrencyCodeEnum.Mxn, sp.GetRequiredService<DofHandler>() },
-                    { CurrencyCodeEnum.Cop, sp.GetRequiredService<TrmHandler>() }
-                });
 
             services.AddDopplerSecurity();
             services.AddCors();
