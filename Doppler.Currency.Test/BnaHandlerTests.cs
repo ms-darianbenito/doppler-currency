@@ -187,7 +187,51 @@ namespace Doppler.Currency.Test
         }
 
         [Fact]
-        public async Task GetCurrency_ShouldBeSendSlackNotificationError_WhenHtmlTableIsNotCorrect()
+        public async Task GetCurrency_ShouldBeSendSlackNotificationErrorAndBadRequest_WhenHtmlTableIsNotCorrect()
+        {
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(@"<div id='cotizacionesCercanas'>
+                    <div class='table table-bordered cotizador' style='float:none; width:100%; text-align: center;'>
+                    <thead>
+                    <tr>
+                    <th>Monedas</th>
+                    <th>Compra</th>
+                    <th>Venta</th>
+                    <th>Fecha</th>
+                    </tr>
+                    </thead>
+                    <body>
+                    <tr>
+                    <td>Dolar U.S.A</td></tr>")
+                });
+
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
+
+            var slackHooksServiceMock = new Mock<ISlackHooksService>();
+
+            var bnaHandler = new BnaHandler(
+                _httpClientFactoryMock.Object,
+                new HttpClientPoliciesSettings
+                {
+                    ClientName = "test"
+                },
+                _mockUsdCurrencySettings.Object,
+                slackHooksServiceMock.Object,
+                Mock.Of<ILogger<CurrencyHandler>>());
+
+            var result = await bnaHandler.Handle(DateTime.Now);
+
+            Assert.False (result.Success);
+            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetCurrency_ShouldBeReturnNoProceAndStatusOk_WhenNoProceButHtmlContainsPreviousPrices()
         {
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -213,8 +257,6 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<string>()))
-                .Verifiable();
 
             var bnaHandler = new BnaHandler(
                 _httpClientFactoryMock.Object,
@@ -228,15 +270,8 @@ namespace Doppler.Currency.Test
 
             var result = await bnaHandler.Handle(DateTime.Now);
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(It.IsAny<string>()), Times.Never);
-
-            Assert.False(result.Success);
-            Assert.Equal(1, result.Errors.Count);
-            Assert.True(result.Errors.ContainsKey("Holiday Error"));
-
-            result.Errors.TryGetValue("Holiday Error", out var value);
-
-            Assert.True(result.Errors.Values.Contains(value));
+            Assert.True(result.Success);
+            Assert.False(result.Entity.CotizationAvailable);
         }
 
         [Fact]
@@ -266,9 +301,6 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification(
-                    It.IsAny<string>()))
-                .Verifiable();
 
             var bnaHandler = new BnaHandler(
                 _httpClientFactoryMock.Object,
@@ -282,12 +314,8 @@ namespace Doppler.Currency.Test
 
             var result = await bnaHandler.Handle(DateTime.UtcNow.AddYears(1));
 
-            slackHooksServiceMock.Verify(x => x.SendNotification(
-                It.IsAny<string>()), Times.Never);
-
-            Assert.Equal(1, result.Errors.Count);
-            Assert.False(result.Success);
-            Assert.True(result.Errors.ContainsKey("No USD for this date"));
+            Assert.True(result.Success);
+            Assert.False(result.Entity.CotizationAvailable);
         }
 
         [Fact]
@@ -336,7 +364,7 @@ namespace Doppler.Currency.Test
 
             var result = await bnaHandler.Handle(dateTime);
 
-            Assert.False(result.Success);
+            Assert.True(result.Success);
 
             var month = dateTime.Month.ToString("d2");
             var day = dateTime.Day.ToString("d2");
