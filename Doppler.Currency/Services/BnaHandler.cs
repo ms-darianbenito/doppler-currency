@@ -59,8 +59,9 @@ namespace Doppler.Currency.Services
 
             if (document.GetElementsByClassName("sinResultados").Any())
             {
-                Logger.LogInformation("Not exist currency USD for date {date}.", date);
-                result.AddError("No USD for this date", ServiceSettings.NoCurrency);
+                Logger.LogInformation("Creating Currency object with No Price.");
+                result.Entity = CreateCurrency(date, "0", ServiceSettings.CurrencyCode, "0");
+
                 return result;
             }
 
@@ -77,9 +78,8 @@ namespace Doppler.Currency.Services
 
             if (usdCurrency == null)
             {
-                Logger.LogError(new Exception("Error getting HTML"),
-                        "Error getting HTML, please check is holiday : {htmlPage}", htmlPage);
-                result.AddError("Holiday Error", "Error getting date is holiday, please check Bna page.");
+                Logger.LogInformation("Creating Currency object with No Price.");
+                result.Entity = CreateCurrency(date, "0", ServiceSettings.CurrencyCode, "0");
 
                 return result;
             }

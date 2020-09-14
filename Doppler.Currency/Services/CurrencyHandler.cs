@@ -58,7 +58,7 @@ namespace Doppler.Currency.Services
             return new CurrencyDto
             {
                 Date = $"{date.ToUniversalTime():yyyy-MM-dd}",
-                SaleValue = saleDecimal,
+                SaleValue = saleDecimal == 0 ? (decimal?)null : saleDecimal,
                 BuyValue = buyDecimal == 0 ? (decimal?) null : buyDecimal,
                 CurrencyName = ServiceSettings.CurrencyName,
                 CurrencyCode = currencyCode.ToUpper()
