@@ -84,8 +84,9 @@ namespace Doppler.Currency.Services
                 return result;
             }
 
-            await SendSlackNotification(htmlPage, date, CurrencyCodeEnum.Mxn);
-            result.AddError("Html Error Mxn currency", "Error getting HTML or date is holiday, please check HTML.");
+            //No price for current date
+            Logger.LogInformation("Creating Currency object with No Price.");
+            result.Entity = CreateCurrency(date, "0", ServiceSettings.CurrencyCode);
             return result;
         }
     }

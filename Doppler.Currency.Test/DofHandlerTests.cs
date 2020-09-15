@@ -82,7 +82,9 @@ namespace Doppler.Currency.Test
                 Mock.Of<ILogger<CurrencyHandler>>());
 
             var result = await dofHandlder.Handle(dateTime);
-            
+
+            Assert.True(result.Success);
+            Assert.True(result.Entity.CotizationAvailable);
             Assert.Equal("2020-02-05", result.Entity.Date);
             Assert.Equal(18.679700M, result.Entity.SaleValue);
             Assert.Equal("Peso Mexicano", result.Entity.CurrencyName);
@@ -121,8 +123,6 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification( It.IsAny<string>()))
-                .Verifiable();
 
             var dofHandlder = new DofHandler(
                 _httpClientFactoryMock.Object,
@@ -136,10 +136,8 @@ namespace Doppler.Currency.Test
 
             var result = await dofHandlder.Handle(DateTime.Now);
 
-            Assert.False(result.Success);
-            slackHooksServiceMock.Verify(x => x.SendNotification(
-                    It.IsAny<string>()), 
-                Times.Once);
+            Assert.True(result.Success);
+            Assert.False(result.Entity.CotizationAvailable);
         }
 
         [Fact]
@@ -184,18 +182,8 @@ namespace Doppler.Currency.Test
 
             var result = await dofHandlder.Handle(DateTime.Now);
 
-            Assert.False(result.Success);
-
-            slackHooksServiceMock.Verify(x => x.SendNotification(
-                    It.IsAny<string>()),
-                Times.Once);
-
-            Assert.Equal(1, result.Errors.Count);
-            Assert.True(result.Errors.ContainsKey("Html Error Mxn currency"));
-
-            result.Errors.TryGetValue("Html Error Mxn currency", out var value);
-
-            Assert.True(result.Errors.Values.Contains(value));
+            Assert.True(result.Success);
+            Assert.False(result.Entity.CotizationAvailable);
         }
 
         [Fact]
@@ -227,7 +215,7 @@ namespace Doppler.Currency.Test
                 .Returns(_httpClient);
 
             var slackHooksServiceMock = new Mock<ISlackHooksService>();
-            slackHooksServiceMock.Setup(x => x.SendNotification( It.IsAny<string>()))
+            slackHooksServiceMock.Setup(x => x.SendNotification(It.IsAny<string>()))
                 .Verifiable();
 
             var loggerMock = new Mock<ILogger<CurrencyHandler>>();
@@ -244,15 +232,8 @@ namespace Doppler.Currency.Test
 
             var result = await dofHandlder.Handle(dateTime);
 
-            Assert.False(result.Success);
-
-            var month = dateTime.Month.ToString("d2");
-            var day = dateTime.Day.ToString("d2");
-
-            var urlCheck =
-                $"http://www.dof.gob.mx/indicadores_detalle.php?cod_tipo_indicador=158&dfecha={day}%2f{month}%2f{dateTime.Year}&hfecha={day}%2f{month}%2f{dateTime.Year}";
-
-            loggerMock.VerifyLogger(LogLevel.Information, $"Building http request with url {urlCheck}", Times.Once());
+            Assert.True(result.Success);
+            Assert.False(result.Entity.CotizationAvailable);
         }
     }
 }
