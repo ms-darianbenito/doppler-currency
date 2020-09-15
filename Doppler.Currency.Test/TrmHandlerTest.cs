@@ -67,13 +67,15 @@ namespace Doppler.Currency.Test
 
             var result = await trmHandler.Handle(dateTime);
 
+            Assert.True(result.Success);
+            Assert.True(result.Entity.CotizationAvailable);
             Assert.Equal("2020-02-05", result.Entity.Date);
             Assert.Equal("Peso Colombiano", result.Entity.CurrencyName);
             Assert.Equal("COP", result.Entity.CurrencyCode);
         }
 
         [Fact]
-        public async Task GetCurrency_ShouldBeSendSlackNotification_WhenTrmDoesNotHaveInformation()
+        public async Task GetCurrency_ShouldBeReturnCotizationAvailableFalseAndOk_WhenTrmDoesNotHaveInformation()
         {
             var dateTime = new DateTime(2020, 02, 05);
 
@@ -82,7 +84,7 @@ namespace Doppler.Currency.Test
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("")
+                    Content = new StringContent("[]")
                 });
 
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
@@ -101,9 +103,8 @@ namespace Doppler.Currency.Test
 
             var result = await trmHandler.Handle(dateTime);
 
-           Assert.Null(result.Entity);
-           Assert.Equal(1, result.Errors.Count);
-           slackHookServiceMock.Verify(x => x.SendNotification(It.IsAny<string>()), Times.Once);
+            Assert.True(result.Success);
+            Assert.False(result.Entity.CotizationAvailable);
         }
     }
 }

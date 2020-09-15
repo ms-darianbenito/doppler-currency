@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CrossCutting;
@@ -45,28 +48,27 @@ namespace Doppler.Currency.Services
             return await GetDataFromHtmlAsync(jsonContent, date);
         }
 
-        private async Task<EntityOperationResult<CurrencyDto>> GetDataFromHtmlAsync(string jsonContent, DateTime date)
+        private Task<EntityOperationResult<CurrencyDto>> GetDataFromHtmlAsync(string jsonContent, DateTime date)
         {
             var result = new EntityOperationResult<CurrencyDto>();
-            dynamic data = JsonConvert.DeserializeObject(jsonContent);
+            var data = JsonConvert.DeserializeObject<IList<TrmResponse>>(jsonContent);
 
-            if (data != null)
+            if (data.Count() > 0)
             {
                 result.Entity = new CurrencyDto
                 {
                     Date = $"{date.ToUniversalTime():yyyy-MM-dd}",
-                    SaleValue = data[0].valor,
+                    SaleValue = data.FirstOrDefault().Valor,
                     CurrencyName = ServiceSettings.CurrencyName,
                     CurrencyCode = ServiceSettings.CurrencyCode.ToUpper()
                 };
             }
             else
             {
-                await SendSlackNotification(jsonContent, date, CurrencyCodeEnum.Cop);
-                result.AddError("Html Error COP currency", "Error getting currency.");
+                result.Entity = CreateCurrency(date, "0", ServiceSettings.CurrencyCode);
             }
 
-            return result;
+            return Task.FromResult(result);
         }
     }
 }
