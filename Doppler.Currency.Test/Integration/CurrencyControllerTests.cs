@@ -32,7 +32,7 @@ namespace Doppler.Currency.Test.Integration
         [InlineData("2012-01-2", "MXN", "Peso Mexicano", "MXN")]
         [InlineData("2012-1-02", "mXn", "Peso Mexicano", "MXM")]
         public async Task GetCurrency_ShouldBeHttpStatusCodeOk_WhenDateAndCurrencyCodeAreCorrectly(
-            string dateTime, 
+            string dateTime,
             string currencyCode,
             string currencyName,
             string expectedCurrencyCode)
@@ -227,11 +227,12 @@ namespace Doppler.Currency.Test.Integration
         {
             // Arrange
             var builder = WebHost.CreateDefaultBuilder()
+                .UseEnvironment("Development")
                 .UseStartup<Startup>();
             var server = new TestServer(builder);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "https://custom.domain.com/conversion/1/2020-2-7");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOjg4NDY5LCJ1bmlxdWVfbmFtZSI6ImFtb3NjaGluaUBtYWtpbmdzZW5zZS5jb20iLCJpc1N1IjpmYWxzZSwic3ViIjoiYW1vc2NoaW5pQG1ha2luZ3NlbnNlLmNvbSIsImN1c3RvbWVySWQiOiIxMzY3IiwiY2RoX2N1c3RvbWVySWQiOiIxMzY3Iiwicm9sZSI6IlVTRVIiLCJpYXQiOjE1OTQxNTUwMjYsImV4cCI6MTU5NDE1NjgyNn0.a4eVqSBptPJk0y9V5Id1yXEzkSroX7j9712W6HOYzb-9irc3pVFQrdWboHcZPLlbpHUdsuoHmFOU-l14N_CjVF9mwjz0Qp9x88JP2KD1x8YtlxUl4BkIneX6ODQ5q_hDeQX-yIUGoU2-cIXzle-JzRssg-XIbaf34fXnUSiUGnQRAuWg3IkmpeLu9fVSbYrY-qW1os1gBSq4NEESz4T87hJblJv3HWNQFJxAtvhG4MLX2ITm8vYNtX39pwI5gdkLY7bNzWmJ1Uphz1hR-sdCdM2oUWKmRmL7txsoD04w5ca7YbdHQGwCI92We4muOs0-N7a4JHYjuDM9lL_TbJGw2w");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOjg4NDY5LCJ1bmlxdWVfbmFtZSI6ImFtb3NjaGluaUBtYWtpbmdzZW5zZS5jb20iLCJpc1N1IjpmYWxzZSwic3ViIjoiYW1vc2NoaW5pQG1ha2luZ3NlbnNlLmNvbSIsImN1c3RvbWVySWQiOiIxMzY3IiwiY2RoX2N1c3RvbWVySWQiOiIxMzY3Iiwicm9sZSI6IlVTRVIiLCJpYXQiOjE1OTQxNTUwMjYsImV4cCI6MTU5NDE1NjgyNn0.bv-ZHKulKMhBjcftiS-G_xa6MqPd8vmTJLCkitkSzz_lH6OblXnlLSjGAtoViT0yQun_IVqUggdfgY-Qv6cS_YeiYT-EqVLI1KFsFoWtZ7E1Yp5LZuVW70GskwZ7YbV7qlPrOOVBUbt6bD4LtwxudJmIenNBIgIVV-dCTl6vQNXRY65af7Ak1BG8IJxBaPhiFPniMIfNi_6my7NiHtL7Db2eeYgIxXf5_R-8BZFQ0CxWzNDTpdfaB48SnC7n6aEg9FQdOxcu8XX4qPBjGfnvCui2J9s8XgLfRtVQ27WwletL9XnGq79Dyp2PdNUsCcR2d4CMRxvzK1rO2jXSJ9Rf7w");
 
             // Act
             var response = await client.SendAsync(request);
